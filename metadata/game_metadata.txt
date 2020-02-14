@@ -1,0 +1,6 @@
+devid=LittleB0xes
+devtitle=Me
+gameid=shooter
+gametitle=Shooter
+version=0.1
+icon=metadata/icon.png

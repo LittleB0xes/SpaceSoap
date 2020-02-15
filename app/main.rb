@@ -1,3 +1,4 @@
+
 # Shooter
 
 class Game
@@ -6,7 +7,7 @@ class Game
     @state = :level_one
     @player = Player.new(1280 / 2, 720 / 2, @scale)
     @meteors_list = []
-    200.times {@meteors_list.push(Meteor.new @scale)}
+    50.times {@meteors_list.push(Meteor.new @scale)}
   end
 
   def state_manager args

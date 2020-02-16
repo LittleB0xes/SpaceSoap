@@ -6,7 +6,7 @@
 class Game
   attr_accessor :bullets_list, :meteors_list
   def initialize
-    @scale = 0.7
+    @scale = 0.6
     @state = :level_one
     @player = Player.new(1280 / 2, 720 / 2, @scale)
     @galaxy_background = []
@@ -137,7 +137,7 @@ class Player
     @vy = 0
     @rotation_factor = 0
     @rotation_speed = 5
-    @speed_max = 20 * scale
+    @speed_max = 10 * scale
     @turn_right = false
     @turn_left = false
     @engine_on = false

@@ -2,11 +2,13 @@
 # Shooter
 
 class Game
+  attr_accessor :bullets_list, :meteors_list
   def initialize
     @scale = 0.6
     @state = :level_one
     @player = Player.new(1280 / 2, 720 / 2, @scale)
     @meteors_list = []
+    @bullets_list = []
     50.times {@meteors_list.push(Meteor.new @scale)}
   end
 
@@ -25,16 +27,27 @@ class Game
     args.outputs.static_background_color = [21,15,10]
     args.outputs.solids << [0,0,1280,720,21,15,10,255]
     args.outputs.sprites << @player.sprite
+    args.outputs.sprites << @bullets_list.map do |bullet|
+      bullet.sprite if bullet.active
+    end
+
     args.outputs.sprites << @meteors_list.map do |meteor|
-      meteor.sprite
+      meteor.sprite if meteor.active
     end
   end
 
   def game_update tick_count
-    @player.update tick_count
+    @player.update tick_count, @bullets_list
+    @bullets_list.each do |bullet|
+      bullet.update
+    end
+
     @meteors_list.each do |meteor|
       meteor.update
     end
+    collision_bullet_enemy
+    @bullets_list.delete_if{|bullet| !bullet.active}
+    @meteors_list.delete_if{|meteor| !meteor.active}
   end
   
   def control_manager args
@@ -54,7 +67,17 @@ class Game
       if args.inputs.keyboard.key_held.up || args.inputs.controller_one.key_held.a
         @player.engine_on = true
       end
-      #
+      if args.inputs.keyboard.key_down.space || args.inputs.controller_one.key_down.r1
+        @player.fire_one = true
+      else
+        @player.fire_one = false
+      end
+    end
+  end
+  def collision_bullet_enemy
+    @bullets_list.product(@meteors_list).find_all{|bullet, enemy| [bullet.x, bullet.y, bullet.w, bullet.h].intersect_rect?([enemy.x, enemy.y, enemy.w, enemy.h])}.map do |bullet, enemy|
+      bullet.active = false
+      enemy.active = false
     end
   end
 
@@ -62,7 +85,7 @@ end
 
 class Player
   attr_sprite
-  attr_accessor :engine_on, :rotation_factor
+  attr_accessor :engine_on, :rotation_factor, :fire_one
   def initialize x, y, scale 
     #Sprite properties
     @x = x
@@ -83,13 +106,15 @@ class Player
     @vy = 0
     @rotation_factor = 0
     @rotation_speed = 5
-    @speed_max = 10
+    @speed_max = 20 * scale
     @turn_right = false
     @turn_left = false
     @engine_on = false
+    @fire_one = false
+    @scale = scale
   end
 
-  def update frame
+  def update frame, bullets_list
     @angle -= @rotation_speed * @rotation_factor
     if @engine_on && @vx**2 + @vy**2 < @speed_max**2
       acc = 0.2
@@ -102,6 +127,14 @@ class Player
       @vy *= 0.98
       @tile_x = 0
     end
+    if @fire_one
+      bullets_list.push(Bullet.new(
+        @x + 0.5 * @w * (1 + Math.cos(Math::PI * @angle / 180)),
+        @y + 0.5 * @h * (1 + Math.sin(Math::PI * @angle / 180)),
+        @angle,
+        @scale)
+      )
+    end
 
     @x += @vx
     @y += @vy
@@ -110,24 +143,48 @@ class Player
     if @x < 0 
       @vx = 0
       @x = 0
-    elsif @x > 1280
+    elsif @x > 1280 - @w
       @vx = 0
-      @x = 1280
+      @x = 1280 - @w
     end
     if @y < 0
       @y = 0
       @vy = 0
-    elsif @y > 720
-      @y = 720
+    elsif @y > 720 - @h
+      @y = 720 - @h
       @vy = 0
     end
+  end
+end
 
-    
+class Bullet
+  attr_sprite
+  attr_accessor :active
+  def initialize x, y, angle, scale
+    @x = x
+    @y = y
+    @w = 10 * scale
+    @h = 10 * scale
+    @tile_w = 10
+    @tile_h = 10
+    @angle = angle
+    @tile_x = 0
+    @tile_y = 0
+    @path = "sprites/bullet1.png"
+
+    @speed_max = 15 * scale
+    @active = true
+  end
+  def update
+    @x += @speed_max * Math.cos(Math::PI * @angle / 180)
+    @y += @speed_max * Math.sin(Math::PI * @angle / 180)
+    @active = false if @x < -@w || @x > 1280 || @y < -@h || @y > 720
   end
 end
 
 class Meteor
   attr_sprite
+  attr_accessor :active
   def initialize scale
   
     @x = 0
@@ -152,10 +209,11 @@ class Meteor
     @h = 39 * scale
     @path = "sprites/enemy1.png"
     @angle = 0
-    @theta = 360 * rand()
 
+    @theta = 360 * rand()
+    @active = true
     @rotation_speed = 5 * rand()
-    @speed = 5 * rand()
+    @speed = 10 * rand() * scale
   end
   def update
     @x += @speed * Math.cos(180 * @theta / Math::PI)
@@ -187,4 +245,6 @@ $game = Game.new
 def tick args
   $game.state_manager args
   args.outputs.labels << [20,680,"FPS : #{$gtk.current_framerate.to_i}", 255, 255, 255,255]
+  args.outputs.labels << [20,660,"Meteors : #{$game.meteors_list.length}", 255, 255, 255,255]
+  args.outputs.labels << [20,640,"Bullets : #{$game.bullets_list.length}", 255, 255, 255,255]
 end

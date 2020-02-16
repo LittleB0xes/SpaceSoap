@@ -1,5 +1,7 @@
 
 # Shooter
+# TODO
+#  - Add moving sky
 
 class Game
   attr_accessor :bullets_list, :meteors_list
@@ -10,6 +12,7 @@ class Game
     @galaxy_background = []
     @meteors_list = []
     @bullets_list = []
+    @explosions_list = []
     50.times {@meteors_list.push(Meteor.new @scale)}
     100.times {@galaxy_background.push(Star.new @scale)}
   end
@@ -40,6 +43,11 @@ class Game
     args.outputs.sprites << @meteors_list.map do |meteor|
       meteor.sprite if meteor.active
     end
+    
+    args.outputs.sprites << @explosions_list.map do |explosion|
+      explosion.sprite if explosion.active
+    end
+
   end
 
   def game_update tick_count
@@ -55,9 +63,15 @@ class Game
     @meteors_list.each do |meteor|
       meteor.update
     end
+
+    @explosions_list.each do |explosion|
+      explosion.update tick_count
+    end
+
     collision_bullet_enemy
     @bullets_list.delete_if{|bullet| !bullet.active}
     @meteors_list.delete_if{|meteor| !meteor.active}
+    @explosions_list.reject!{|explosion| !explosion.active}
   end
   
   def control_manager args
@@ -84,10 +98,17 @@ class Game
       end
     end
   end
+
   def collision_bullet_enemy
     @bullets_list.product(@meteors_list).find_all{|bullet, enemy| [bullet.x, bullet.y, bullet.w, bullet.h].intersect_rect?([enemy.x, enemy.y, enemy.w, enemy.h])}.map do |bullet, enemy|
       bullet.active = false
       enemy.active = false
+      @explosions_list.push(Explosion.new(enemy.x, enemy.y, @scale))
+    end
+    @meteors_list.find_all{|meteor| [@player.x, @player.y, @player.w, @player.h].intersect_rect?([meteor.x, meteor.y, meteor.w, meteor.h])}.map do |meteor|
+      meteor.active = false
+      @explosions_list.push(Explosion.new(meteor.x, meteor.y, @scale))
+      # @player.energy -= 1
     end
   end
 
@@ -267,6 +288,33 @@ class Star
   end
 end
 
+class Explosion
+  attr_sprite
+  attr_accessor :active
+  def initialize x, y, scale
+    @x = x
+    @y = y
+    @w = 32 * scale
+    @h = 32 * scale
+    @path = "sprites/explosion.png"
+    @tile_x = 0
+    @tile_y = 0
+    @tile_w = 32
+    @tile_h = 32
+    @angle = 360 * rand()
+
+    @frame_number = 0
+    @active = true
+  end
+
+  def update frame
+
+    @tile_x = 32 * @frame_number
+    @frame_number += 1 if frame % 2 == 0
+    @active = false if @frame_number > 6
+
+  end
+end
 
 
 

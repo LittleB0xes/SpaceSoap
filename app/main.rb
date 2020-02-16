@@ -6,7 +6,7 @@
 class Game
   attr_accessor :bullets_list, :meteors_list
   def initialize
-    @scale = 0.6
+    @scale = 0.7
     @state = :level_one
     @player = Player.new(1280 / 2, 720 / 2, @scale)
     @galaxy_background = []
@@ -288,11 +288,19 @@ class Star
     @a_max = 255 * rand()
     @g_max = 255 * rand()
     @phi = Math::PI * rand()
+    @vx = 0.1
+    @vy = 0.1
   end
   def update frame
+    # Star luminosity oscillation
     @a = @a_max * (0.7 + 0.3 * Math.cos(frame / 60 + @phi))
     @g = @g_max * (0.7 + 0.3 * Math.cos(frame / 60))
-    # Make the sky move
+    # Star mouvement around a center
+    @x += 0.309 
+    @y += 0.359
+
+    @x = 0 if @x > 1280
+    @y = 0 if @y > 720
 
   end
 end

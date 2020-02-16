@@ -7,9 +7,11 @@ class Game
     @scale = 0.6
     @state = :level_one
     @player = Player.new(1280 / 2, 720 / 2, @scale)
+    @galaxy_background = []
     @meteors_list = []
     @bullets_list = []
     50.times {@meteors_list.push(Meteor.new @scale)}
+    100.times {@galaxy_background.push(Star.new @scale)}
   end
 
   def state_manager args
@@ -25,7 +27,11 @@ class Game
   end
   def game_render args
     args.outputs.static_background_color = [21,15,10]
+
     args.outputs.solids << [0,0,1280,720,21,15,10,255]
+    args.outputs.sprites << @galaxy_background.map do |star|
+      star.sprite
+    end
     args.outputs.sprites << @player.sprite
     args.outputs.sprites << @bullets_list.map do |bullet|
       bullet.sprite if bullet.active
@@ -38,6 +44,10 @@ class Game
 
   def game_update tick_count
     @player.update tick_count, @bullets_list
+    @galaxy_background.each do |star|
+      star.update tick_count
+    end
+
     @bullets_list.each do |bullet|
       bullet.update
     end
@@ -234,7 +244,26 @@ end
 
 class Star
   attr_sprite
-  def initialize
+  def initialize scale
+    @x = 1280 * rand()
+    @y = 720 * rand()
+    dist_scale = 1 - 0.5 * rand()
+    @w = 16 * dist_scale * scale
+    @h = 16 * dist_scale * scale
+    @path = "sprites/star.png"
+    @r = 255
+    @g = 255 * rand()
+    @b = 255
+    @a = 255 * rand()
+    @a_max = 255 * rand()
+    @g_max = 255 * rand()
+    @phi = Math::PI * rand()
+  end
+  def update frame
+    @a = @a_max * (0.7 + 0.3 * Math.cos(frame / 60 + @phi))
+    @g = @g_max * (0.7 + 0.3 * Math.cos(frame / 60))
+    # Make the sky move
+
   end
 end
 

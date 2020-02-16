@@ -171,8 +171,17 @@ class Player
     @y += @vy
     @rotation_factor = 0
     @engine_on = false
+
+    # Smooth stop when border approch
+    offset = 50
+    if (@x < offset && @vx  < 0) || (@x > 1280 - offset - @w && @vx > 0) || (@y < offset &&  @vy  < 0) || (@y > 720 - offset - @h &&  @vy > 0)
+      @vx *= 0.7
+      @vy *= 0.7
+    end
+
+    # Stay on th screen please !
     if @x < 0 
-      @vx = 0
+      @vx = 0 
       @x = 0
     elsif @x > 1280 - @w
       @vx = 0
@@ -289,8 +298,10 @@ class Star
 end
 
 class Explosion
+  
   attr_sprite
   attr_accessor :active
+  
   def initialize x, y, scale
     @x = x
     @y = y
@@ -314,6 +325,7 @@ class Explosion
     @active = false if @frame_number > 6
 
   end
+
 end
 
 

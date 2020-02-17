@@ -3,16 +3,16 @@ require 'app/objects.rb'
 require 'app/player.rb'
 
 class Game
-  attr_accessor :bullets_list, :meteors_list
+  attr_accessor :bullets_list, :enemies_list
   def initialize
     @scale = 0.6
     @state = :level_one
     @player = Player.new(1280 / 2, 720 / 2, @scale)
     @galaxy_background = []
-    @meteors_list = []
+    @enemies_list = []
     @bullets_list = []
     @explosions_list = []
-    50.times {@meteors_list.push(Meteor.new @scale)}
+    50.times {@enemies_list.push(Meteor.new @scale)}
     100.times {@galaxy_background.push(Star.new @scale)}
   end
 
@@ -39,7 +39,7 @@ class Game
       bullet.sprite if bullet.active
     end
 
-    args.outputs.sprites << @meteors_list.map do |meteor|
+    args.outputs.sprites << @enemies_list.map do |meteor|
       meteor.sprite if meteor.active
     end
     
@@ -59,7 +59,7 @@ class Game
       bullet.update
     end
 
-    @meteors_list.each do |meteor|
+    @enemies_list.each do |meteor|
       meteor.update
     end
 
@@ -69,7 +69,7 @@ class Game
 
     collision_bullet_enemy
     @bullets_list.delete_if{|bullet| !bullet.active}
-    @meteors_list.delete_if{|meteor| !meteor.active}
+    @enemies_list.delete_if{|meteor| !meteor.active}
     @explosions_list.reject!{|explosion| !explosion.active}
   end
   
@@ -99,12 +99,12 @@ class Game
   end
 
   def collision_bullet_enemy
-    @bullets_list.product(@meteors_list).find_all{|bullet, enemy| [bullet.x, bullet.y, bullet.w, bullet.h].intersect_rect?([enemy.x, enemy.y, enemy.w, enemy.h])}.map do |bullet, enemy|
+    @bullets_list.product(@enemies_list).find_all{|bullet, enemy| [bullet.x, bullet.y, bullet.w, bullet.h].intersect_rect?([enemy.x, enemy.y, enemy.w, enemy.h])}.map do |bullet, enemy|
       bullet.active = false
       enemy.active = false
       @explosions_list.push(Explosion.new(enemy.x, enemy.y, @scale))
     end
-    @meteors_list.find_all{|meteor| [@player.x, @player.y, @player.w, @player.h].intersect_rect?([meteor.x, meteor.y, meteor.w, meteor.h])}.map do |meteor|
+    @enemies_list.find_all{|meteor| [@player.x, @player.y, @player.w, @player.h].intersect_rect?([meteor.x, meteor.y, meteor.w, meteor.h])}.map do |meteor|
       meteor.active = false
       @explosions_list.push(Explosion.new(meteor.x, meteor.y, @scale))
       # @player.energy -= 1
@@ -120,6 +120,6 @@ $game = Game.new
 def tick args
   $game.state_manager args
   args.outputs.labels << [20,680,"FPS : #{$gtk.current_framerate.to_i}", 255, 255, 255,255]
-  args.outputs.labels << [20,660,"Meteors : #{$game.meteors_list.length}", 255, 255, 255,255]
+  args.outputs.labels << [20,660,"Meteors : #{$game.enemies_list.length}", 255, 255, 255,255]
   args.outputs.labels << [20,640,"Bullets : #{$game.bullets_list.length}", 255, 255, 255,255]
 end

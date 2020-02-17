@@ -3,10 +3,10 @@ require 'app/objects.rb'
 require 'app/player.rb'
 
 class Game
-  attr_accessor :bullets_list, :enemies_list
+  attr_accessor :bullets_list, :enemies_list, :state
   def initialize
     @scale = 0.6
-    @state = :level_one
+    @state = :intro
     @player = Player.new(1280 / 2, 720 / 2, @scale)
     @galaxy_background = []
     @enemies_list = []
@@ -17,20 +17,49 @@ class Game
   end
 
   def state_manager args
+    control_manager args
     case @state
     when :intro
-      #
+      intro_render args
+      @galaxy_background.each {|star| star.update args.tick_count}
     when :level_one
-      control_manager args
       game_update args.tick_count
       game_render args
     when :end
+    when :info
     end
   end
-  def game_render args
-    args.outputs.static_background_color = [21,15,10]
+  
+  def intro_render args
+      @galaxy_background.map {|star| args.outputs.sprites << star.sprite}
+      args.outputs.labels << {
+        x: 640,
+        y: 360,
+        text: "Space shooter",
+        size_enum: 10,
+        alignment_enum: 1,
+        r: 255,
+        g: 255,
+        b: 255,
+        a: 255,
+        font: "fonts/8-bit-pusab.ttf"
+      }
+      alpha = 125 * (1.25 + 0.75 * Math.cos(args.tick_count / 10))
+      args.outputs.labels << {
+        x: 640,
+        y: 300,
+        text: "Press Fire to start",
+        size_enum: 0,
+        alignment_enum: 1,
+        r: 255,
+        g: 255,
+        b: 255,
+        a: alpha,
+        font: "fonts/8-bit-pusab.ttf"
+      }
+  end
 
-    args.outputs.solids << [0,0,1280,720,21,15,10,255]
+  def game_render args
     args.outputs.sprites << @galaxy_background.map do |star|
       star.sprite
     end
@@ -77,7 +106,7 @@ class Game
     case @state
     when :intro
       if args.inputs.keyboard.key_down.space || args.inputs.controller_one.key_down.start
-        @state = :game
+        @state = :level_one
       end
     when :level_one
       if args.inputs.keyboard.key_held.left || args.inputs.controller_one.key_held.directional_left
@@ -118,6 +147,8 @@ end
 $game = Game.new
 
 def tick args
+  args.outputs.static_background_color = [21,15,10]
+  args.outputs.solids << [0,0,1280,720,21,15,10,255]
   $game.state_manager args
   args.outputs.labels << [20,680,"FPS : #{$gtk.current_framerate.to_i}", 255, 255, 255,255]
   args.outputs.labels << [20,660,"Meteors : #{$game.enemies_list.length}", 255, 255, 255,255]

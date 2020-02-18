@@ -63,7 +63,14 @@ class Game
     args.outputs.sprites << @galaxy_background.map do |star|
       star.sprite
     end
+
+
     args.outputs.sprites << @player.sprite
+    if @player.shield_on
+      args.outputs.sprites << @player.shield.sprite
+    end
+
+
     args.outputs.sprites << @bullets_list.map do |bullet|
       bullet.sprite if bullet.active
     end
@@ -108,6 +115,7 @@ class Game
       if args.inputs.keyboard.key_down.space || args.inputs.controller_one.key_down.start
         @state = :level_one
       end
+
     when :level_one
       if args.inputs.keyboard.key_held.left || args.inputs.controller_one.key_held.directional_left
         @player.rotation_factor = -1
@@ -124,19 +132,47 @@ class Game
       else
         @player.fire_one = false
       end
+
+      if args.inputs.keyboard.key_held.w
+        @player.shield_on = true
+      else
+        @player.shield_on = false
+      end
+
     end
   end
 
   def collision_bullet_enemy
     @bullets_list.product(@enemies_list).find_all{|bullet, enemy| [bullet.x, bullet.y, bullet.w, bullet.h].intersect_rect?([enemy.x, enemy.y, enemy.w, enemy.h])}.map do |bullet, enemy|
       bullet.active = false
-      enemy.active = false
+
+      if enemy.enemy_type == :meteor      # If big meteor then fragmentation
+        @enemies_list.push(enemy.fragmentation)
+      else
+        enemy.active = false
+      end
       @explosions_list.push(Explosion.new(enemy.x, enemy.y, @scale))
     end
-    @enemies_list.find_all{|meteor| [@player.x, @player.y, @player.w, @player.h].intersect_rect?([meteor.x, meteor.y, meteor.w, meteor.h])}.map do |meteor|
-      meteor.active = false
-      @explosions_list.push(Explosion.new(meteor.x, meteor.y, @scale))
-      # @player.energy -= 1
+
+    if !@player.shield_on
+      @enemies_list.find_all{|meteor| [@player.x, @player.y, @player.w, @player.h].intersect_rect?([meteor.x, meteor.y, meteor.w, meteor.h])}.map do |meteor|
+        meteor.active = false
+        @explosions_list.push(Explosion.new(meteor.x, meteor.y, @scale))
+        # @player.energy -= 1
+      end
+    else
+      @enemies_list.find_all{|meteor| intersect_circle?(@player.x + @player.w / 2, @player.y + @player.h / 2, @player.shield.h - 25, meteor.x + meteor.w / 2, meteor.y + meteor.h / 2, meteor.w / 2)}.map do |meteor|
+        meteor.active = false
+        @explosions_list.push(Explosion.new(meteor.x, meteor.y, @scale))
+      end
+    end
+  end
+  
+  def intersect_circle? xa, ya, ra, xb, yb, rb
+    if (xa - xb)**2 + (ya - yb)**2 < (ra + rb)**2
+      true
+    else
+      false
     end
   end
 

@@ -3,10 +3,10 @@ class Bullet
   attr_sprite
   attr_accessor :active
   def initialize x, y, angle, scale
-    @x = x
-    @y = y
     @w = 10 * scale
     @h = 10 * scale
+    @x = x - @w / 2
+    @y = y - @h / 2
     @tile_w = 10
     @tile_h = 10
     @angle = angle

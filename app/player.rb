@@ -1,7 +1,7 @@
 
 class Player
   attr_sprite
-  attr_accessor :engine_on, :rotation_factor, :fire_one
+  attr_accessor :engine_on, :rotation_factor, :fire_one, :shield_on, :shield
   def initialize x, y, scale 
     #Sprite properties
     @x = x
@@ -15,9 +15,10 @@ class Player
     @tile_h = 46
     @tile_x = 0
     @tile_y = 0
-    @path = "sprites/SpaceShip.png"
+    @path = "sprites/spaceship.png"
     
     # Other player properties
+    @scale = scale
     @vx = 0
     @vy = 0
     @rotation_factor = 0
@@ -27,7 +28,8 @@ class Player
     @turn_left = false
     @engine_on = false
     @fire_one = false
-    @scale = scale
+    @shield_on = false
+    @shield = Shield.new @x, @y, @w, @h, @scale
   end
 
   def update frame, bullets_list
@@ -43,7 +45,7 @@ class Player
       @vy *= 0.98
       @tile_x = 0
     end
-    if @fire_one
+    if @fire_one && !@shield_on
       bullets_list.push(Bullet.new(
         @x + 0.5 * @w * (1 + Math.cos(Math::PI * @angle / 180)),
         @y + 0.5 * @h * (1 + Math.sin(Math::PI * @angle / 180)),
@@ -51,6 +53,7 @@ class Player
         @scale)
       )
     end
+
 
     @x += @vx
     @y += @vy
@@ -79,7 +82,34 @@ class Player
       @y = 720 - @h
       @vy = 0
     end
+
+    @shield.update(@x, @y, frame) if @shield_on
   end
 end
 
+class Shield
+  attr_sprite
+  def initialize player_x, player_y, player_w, player_h, scale
+    @w = 75 * scale
+    @h = 75 * scale
+    @tile_w = 75
+    @tile_h = 75
+    @tile_x = 0
+    @tile_y = 0
+    @angle = 0
+    @path = "sprites/shield.png"
+    @delta_x = player_w / 2 - @w / 2
+    @delta_y = player_h / 2 - @h / 2
+    @x = player_x + @delta_x
+    @y = player_y + @delta_y
 
+    @scale = scale
+  end
+  
+  def update player_x, player_y, frame
+    @tile_x = (frame / 4).to_i % 4 * @tile_w
+    @x = player_x + @delta_x
+    @y = player_y + @delta_y
+    @angle += 1
+  end
+end

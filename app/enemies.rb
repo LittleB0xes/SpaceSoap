@@ -1,10 +1,4 @@
 
-class Enemy
-  attr_sprite
-  def initialize
-  end
-end
-
 class Meteor
   attr_sprite
   attr_accessor :active, :big_one, :speed, :theta, :enemy_type

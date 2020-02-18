@@ -1,7 +1,8 @@
 
 class Player
   attr_sprite
-  attr_accessor :engine_on, :rotation_factor, :fire_one, :shield_on, :shield
+  attr_accessor :engine_on, :rotation_factor, :fire_one, :shield, :energy_level, :score
+
   def initialize x, y, scale 
     #Sprite properties
     @x = x
@@ -24,11 +25,13 @@ class Player
     @rotation_factor = 0
     @rotation_speed = 5
     @speed_max = 10 * scale
+    @energy_level = 100
+    @score = 0
     @turn_right = false
     @turn_left = false
     @engine_on = false
     @fire_one = false
-    @shield_on = false
+
     @shield = Shield.new @x, @y, @w, @h, @scale
   end
 
@@ -45,7 +48,7 @@ class Player
       @vy *= 0.98
       @tile_x = 0
     end
-    if @fire_one && !@shield_on
+    if @fire_one && !@shield.shield_on
       bullets_list.push(Bullet.new(
         @x + 0.5 * @w * (1 + Math.cos(Math::PI * @angle / 180)),
         @y + 0.5 * @h * (1 + Math.sin(Math::PI * @angle / 180)),
@@ -83,12 +86,13 @@ class Player
       @vy = 0
     end
 
-    @shield.update(@x, @y, frame) if @shield_on
+    @shield.update(@x, @y, frame) 
   end
 end
 
 class Shield
   attr_sprite
+  attr_accessor :shield_level, :shield_on
   def initialize player_x, player_y, player_w, player_h, scale
     @w = 75 * scale
     @h = 75 * scale
@@ -102,7 +106,10 @@ class Shield
     @delta_y = player_h / 2 - @h / 2
     @x = player_x + @delta_x
     @y = player_y + @delta_y
+    @a = 255
 
+    @shield_on = false
+    @shield_level = 100
     @scale = scale
   end
   
@@ -110,6 +117,14 @@ class Shield
     @tile_x = (frame / 4).to_i % 4 * @tile_w
     @x = player_x + @delta_x
     @y = player_y + @delta_y
+    @a = 225 + 12 * (1 +  Math.cos(frame / 10))
     @angle += 1
+    @shield_on = false if @shield_level <= 0
+
+    if @shield_on && @shield_level >= 0 
+     @shield_level -= 1
+    elsif !@shield_on && @shield_level <= 100
+      @shield_level += 0.01
+    end
   end
 end

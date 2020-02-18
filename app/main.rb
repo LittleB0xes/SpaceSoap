@@ -251,9 +251,9 @@ class Game
         @player.fire_one = false
       end
 
-      if args.inputs.keyboard.key_held.w || args.inputs.controller_one.key_down.x
+      if args.inputs.keyboard.key_held.w || args.inputs.controller_one.key_held.x
         @player.shield.shield_on = true 
-      elsif !args.inputs.keyboard.key_held.w #|| args.inputs.controller_one.key_down.x
+      elsif !args.inputs.keyboard.key_held.w && !args.inputs.controller_one.key_held.x
         @player.shield.shield_on = false 
       end
     end

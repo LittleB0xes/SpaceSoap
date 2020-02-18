@@ -161,23 +161,19 @@ class Game
         # @player.energy -= 1
       end
     else
-      @enemies_list.find_all{|meteor| intersect_circle?(@player.x + @player.w / 2, @player.y + @player.h / 2, @player.shield.h - 25, meteor.x + meteor.w / 2, meteor.y + meteor.h / 2, meteor.w / 2)}.map do |meteor|
+      @enemies_list.find_all{|meteor| [@player.x + @player.w / 2, @player.y + @player.h / 2, @player.shield.h].intersect_circle?( [meteor.x + meteor.w / 2, meteor.y + meteor.h / 2, meteor.w / 2])}.map do |meteor|
         meteor.active = false
         @explosions_list.push(Explosion.new(meteor.x, meteor.y, @scale))
       end
     end
   end
-  
-  def intersect_circle? xa, ya, ra, xb, yb, rb
-    if (xa - xb)**2 + (ya - yb)**2 < (ra + rb)**2
-      true
-    else
-      false
-    end
-  end
-
 end
 
+class Array
+  def intersect_circle? circle
+    (self[0] - circle[0])**2 + (self[1] - circle[1])**2 < (self[2] - circle[2])**2 ? true : false
+  end
+end
 
 
 $game = Game.new

@@ -119,10 +119,11 @@ class Game
    #   b: 10,
    #   a: 255
    # }.solid
-
+    x_energy_bar = 20 
+    y_energy_bar = 640
     energy_bar = {
-      x: 20,
-      y: 640,
+      x: x_energy_bar,
+      y: y_energy_bar,
       w: @player.energy_level,
       h: 16,
       r: bar_color[0],
@@ -130,7 +131,16 @@ class Game
       b: bar_color[2],
       a: 255
     }.solid
-
+    energy_label = {
+      x: x_energy_bar + 5,
+      y: y_energy_bar + 16,
+      text: "Life",
+      size_enum: -2,
+      r: 255,
+      g: 255,
+      b: 255,
+      font: "fonts/8-bit-pusab.ttf"
+    }.label
     if @player.shield.shield_level > 50
       bar_color = [67, 102, 194]
     elsif @player.shield.shield_level > 20
@@ -148,10 +158,11 @@ class Game
    #   b: 10,
    #   a: 255
    # }.solid
-
+    x_shield_bar = 20
+    y_shield_bar = 608
     shield_bar = {
-      x: 20,
-      y: 608,
+      x: x_shield_bar,
+      y: y_shield_bar,
       w: @player.shield.shield_level,
       h: 16,
       r: bar_color[0],
@@ -159,6 +170,16 @@ class Game
       b: bar_color[2],
       a: 255
     }.solid
+    shield_label = {
+      x: x_shield_bar + 5,
+      y: y_shield_bar + 16,
+      text: "Shield",
+      size_enum: -2,
+      r: 255,
+      g: 255,
+      b: 255,
+      font: "fonts/8-bit-pusab.ttf"
+    }.label
 
     score = {
       x: 1200,
@@ -171,7 +192,7 @@ class Game
     }.label
       
    # args.outputs.primitives << [background_bar1, energy_bar, background_bar2, shield_bar, score] 
-    args.outputs.primitives << [energy_bar, shield_bar, score] 
+    args.outputs.primitives << [energy_bar, energy_label, shield_bar, shield_label, score] 
     
   end
 

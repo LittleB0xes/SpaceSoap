@@ -16,3 +16,7 @@ You can use keyboard or gamepad to play
 | Fire              | Space             | L1                          |
 | Engine            | Arrow Up          | A                           |
 |                   |                   |                             |
+
+## GFX Credits
+
+The assets in this repository are created at Sparklin Labs by Pixel-boy. I made some additions and modifications

@@ -6,6 +6,7 @@ class Game
   attr_accessor :bullets_list, :enemies_list, :state
   def initialize
     @scale = 0.6
+    @font = "fonts/8-bit-pusab"
     @state = :intro
     @player = Player.new(1280 / 2, 720 / 2, @scale)
     @galaxy_background = []
@@ -23,6 +24,11 @@ class Game
     case @state
     when :intro
       intro_render args
+      @player = Player.new(1280 / 2, 720 / 2, @scale)
+      @enemies_list = []
+      @bullets_list = []
+      @explosions_list = []
+      30.times {@enemies_list.push(Meteor.new @scale)}
     when :level_one
       game_update args.tick_count
       game_render args
@@ -33,11 +39,6 @@ class Game
       @galaxy_background.each {|star| star.update args.tick_count}
 
       # Reset game data
-      @player = Player.new(1280 / 2, 720 / 2, @scale)
-      @enemies_list = []
-      @bullets_list = []
-      @explosions_list = []
-      50.times {@enemies_list.push(Meteor.new @scale)}
     when :info
     end
   end
@@ -73,7 +74,7 @@ class Game
 
   def end_render args
       @galaxy_background.map {|star| args.outputs.sprites << star.sprite}
-      args.outputs.labels << {
+      game_over = {
         x: 640,
         y: 360,
         text: "Game Over",
@@ -84,11 +85,23 @@ class Game
         b: 255,
         a: 255,
         font: "fonts/8-bit-pusab.ttf"
-      }
+      }.label
       alpha = 125 * (1.25 + 0.75 * Math.cos(args.tick_count / 10))
-      args.outputs.labels << {
+      score = {
         x: 640,
-        y: 300,
+        y: 280,
+        text: "#{@player.score}",
+        size_enum: 6,
+        alignment_enum: 1,
+        r: 255,
+        g: 255,
+        b: 255,
+        a: alpha,
+        font: "fonts/8-bit-pusab.ttf"
+      }
+      restart = {
+        x: 640,
+        y: 40,
         text: "Press start",
         size_enum: 0,
         alignment_enum: 1,
@@ -98,6 +111,7 @@ class Game
         a: alpha,
         font: "fonts/8-bit-pusab.ttf"
       }
+      args.outputs.primitives << [game_over, score, restart]
   end
 
   def display_info args
@@ -121,11 +135,22 @@ class Game
    # }.solid
     x_energy_bar = 20 
     y_energy_bar = 640
+    background_bar1 = {
+      x: x_energy_bar - 9,
+      y: y_energy_bar - 8,
+      w: 197 * @scale,
+      h: 43 * @scale,
+      path: "sprites/energy.png",
+      r: 255,
+      g: 255,
+      b: 255,
+      a: 255
+    }.sprite
     energy_bar = {
       x: x_energy_bar,
       y: y_energy_bar,
       w: @player.energy_level,
-      h: 16,
+      h: 11,
       r: bar_color[0],
       g: bar_color[1],
       b: bar_color[2],
@@ -133,9 +158,9 @@ class Game
     }.solid
     energy_label = {
       x: x_energy_bar + 5,
-      y: y_energy_bar + 16,
+      y: y_energy_bar + 12,
       text: "Life",
-      size_enum: -2,
+      size_enum: -4,
       r: 255,
       g: 255,
       b: 255,
@@ -148,23 +173,24 @@ class Game
     else 
       bar_color =[170, 75, 109]
     end
-   # background_bar2 = {
-   #   x: 20,
-   #   y: 608,
-   #   w: 100,
-   #   h: 16,
-   #   r: 21,
-   #   g: 15,
-   #   b: 10,
-   #   a: 255
-   # }.solid
     x_shield_bar = 20
     y_shield_bar = 608
+    background_bar2 = {
+      x: x_shield_bar - 9,
+      y: y_shield_bar - 8,
+      w: 197 * @scale,
+      h: 43 * @scale,
+      path: "sprites/energy.png",
+      r: 255,
+      g: 255,
+      b: 255,
+      a: 255
+    }.sprite
     shield_bar = {
       x: x_shield_bar,
       y: y_shield_bar,
       w: @player.shield.shield_level,
-      h: 16,
+      h: 11,
       r: bar_color[0],
       g: bar_color[1],
       b: bar_color[2],
@@ -172,9 +198,9 @@ class Game
     }.solid
     shield_label = {
       x: x_shield_bar + 5,
-      y: y_shield_bar + 16,
+      y: y_shield_bar + 12,
       text: "Shield",
-      size_enum: -2,
+      size_enum: -4,
       r: 255,
       g: 255,
       b: 255,
@@ -191,8 +217,7 @@ class Game
       font: "fonts/8-bit-pusab.ttf"
     }.label
       
-   # args.outputs.primitives << [background_bar1, energy_bar, background_bar2, shield_bar, score] 
-    args.outputs.primitives << [energy_bar, energy_label, shield_bar, shield_label, score] 
+    args.outputs.primitives << [background_bar1, energy_bar, energy_label,background_bar2, background_bar2, shield_bar, shield_label,  score] 
     
   end
 
@@ -250,9 +275,13 @@ class Game
   
   def control_manager args
     case @state
-    when :intro, :end
+    when :intro
       if args.inputs.keyboard.key_down.space || args.inputs.controller_one.key_down.start
         @state = :level_one
+      end
+    when :end
+      if args.inputs.keyboard.key_down.space || args.inputs.controller_one.key_down.start
+        @state = :intro
       end
 
     when :level_one
@@ -263,10 +292,10 @@ class Game
       else
         @player.rotation_factor = args.inputs.controller_one.left_analog_x_raw / 32000
       end
-      if args.inputs.keyboard.key_held.up || args.inputs.controller_one.key_held.a
+      if args.inputs.keyboard.key_held.up || args.inputs.controller_one.key_held.directional_up || args.inputs.controller_one.left_analog_y_perc > 0.5
         @player.engine_on = true
       end
-      if args.inputs.keyboard.key_down.space || args.inputs.controller_one.key_down.r1
+      if args.inputs.keyboard.key_down.space || args.inputs.controller_one.key_down.a
         @player.fire_one = true
       else
         @player.fire_one = false

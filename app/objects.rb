@@ -1,5 +1,8 @@
 
+
+
 class Bullet
+
   attr_sprite
   attr_accessor :active
   def initialize x, y, angle, scale
@@ -14,15 +17,41 @@ class Bullet
     @tile_y = 0
     @path = "sprites/bullet1.png"
 
-    @speed_max = 15 * scale
+    @speed = 15 * scale
     @active = true
   end
   def update
-    @x += @speed_max * Math.cos(Math::PI * @angle / 180)
-    @y += @speed_max * Math.sin(Math::PI * @angle / 180)
+    @x += @speed * Math.cos(Math::PI * @angle / 180)
+    @y += @speed * Math.sin(Math::PI * @angle / 180)
     @active = false if @x < -@w || @x > 1280 || @y < -@h || @y > 720
   end
 end
+
+class Rocket
+  attr_sprite
+  attr_accessor :active
+  def initialize x, y, angle, scale
+    @w = 17 * scale
+    @h = 8 * scale
+    @angle = angle
+    @x = x - @w / 2 
+    @y = y - @h / 2
+    @path = "sprites/bullet2.png"
+    @tile_w = 17
+    @tile_h = 8
+    @tile_x = 0
+    @tile_y = 0
+
+    @speed = 10 * scale
+    @active = true
+  end
+  def update
+    @x += @speed * Math.cos(Math::PI * @angle / 180)
+    @y += @speed * Math.sin(Math::PI * @angle / 180)
+    @active = false if @x < -@w || @x > 1280 || @y < -@h || @y > 720
+  end
+end
+
 
 class Star
   attr_sprite

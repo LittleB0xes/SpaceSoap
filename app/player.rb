@@ -1,7 +1,7 @@
 
 class Player
   attr_sprite
-  attr_accessor :engine_on, :rotation_factor, :fire_one, :shield, :energy_level, :score
+  attr_accessor :engine_on, :rotation_factor, :fire_one, :fire_two, :fire_three, :shield, :energy_level, :score
 
   def initialize x, y, scale 
     #Sprite properties
@@ -31,6 +31,8 @@ class Player
     @turn_left = false
     @engine_on = false
     @fire_one = false
+    @fire_two = false
+    @fire_three = false
 
     @shield = Shield.new @x, @y, @w, @h, @scale
   end
@@ -50,8 +52,8 @@ class Player
     end
     if @fire_one && !@shield.shield_on
       bullets_list.push(Bullet.new(
-        @x + 0.5 * @w * (1 + Math.cos(Math::PI * @angle / 180)),
-        @y + 0.5 * @h * (1 + Math.sin(Math::PI * @angle / 180)),
+                         @x + 0.5 * @w * (1 + 1.5 * Math.cos(Math::PI * @angle / 180)),
+                         @y + 0.5 * @h * (1 + 1.5 * Math.sin(Math::PI * @angle / 180)),
         @angle,
         @scale)
       )
@@ -66,11 +68,11 @@ class Player
     # Smooth stop when border approch
     offset = 50
     if (@x < offset && @vx  < 0) || (@x > 1280 - offset - @w && @vx > 0) || (@y < offset &&  @vy  < 0) || (@y > 720 - offset - @h &&  @vy > 0)
-      @vx *= 0.7
-      @vy *= 0.7
+      @vx *= 0.8
+      @vy *= 0.8
     end
 
-    # Stay on th screen please !
+    # Stay on the screen please !
     if @x < 0 
       @vx = 0 
       @x = 0

@@ -12,8 +12,8 @@ class Game
     @galaxy_background = []
     @enemies_list = []
     @bullets_list = []
+    @enemies_bullets_list = []
     @explosions_list = []
-    50.times {@enemies_list.push(Meteor.new @scale)}
     100.times {@galaxy_background.push(Star.new @scale)}
   end
 
@@ -27,8 +27,10 @@ class Game
       @player = Player.new(1280 / 2, 720 / 2, @scale)
       @enemies_list = []
       @bullets_list = []
+      @enemies_bullets_list = []
       @explosions_list = []
       30.times {@enemies_list.push(Meteor.new @scale)}
+      @enemies_list.push(PurpleFighter.new(@scale))
     when :level_one
       game_update args.tick_count
       game_render args
@@ -123,16 +125,6 @@ class Game
     else 
       bar_color =[170, 75, 109]
     end
-   # background_bar1 = {
-   #   x: 20,
-   #   y: 640,
-   #   w: 100,
-   #   h: 16,
-   #   r: 21,
-   #   g: 15,
-   #   b: 10,
-   #   a: 255
-   # }.solid
     x_energy_bar = 20 
     y_energy_bar = 640
     background_bar1 = {
@@ -225,9 +217,9 @@ class Game
     args.outputs.sprites << @galaxy_background.map do |star|
       star.sprite
     end
-
-
+    
     args.outputs.sprites << @player.sprite
+
     if @player.shield.shield_on
       args.outputs.sprites << @player.shield.sprite
     end
@@ -236,6 +228,7 @@ class Game
     args.outputs.sprites << @bullets_list.map do |bullet|
       bullet.sprite if bullet.active
     end
+
 
     args.outputs.sprites << @enemies_list.map do |meteor|
       meteor.sprite if meteor.active
@@ -260,7 +253,7 @@ class Game
     end
 
     @enemies_list.each do |meteor|
-      meteor.update
+      meteor.update tick_count, @player, @bullets_list
     end
 
     @explosions_list.each do |explosion|
@@ -295,12 +288,30 @@ class Game
       if args.inputs.keyboard.key_held.up || args.inputs.controller_one.key_held.directional_up || args.inputs.controller_one.left_analog_y_perc > 0.5
         @player.engine_on = true
       end
+
+      # Fire one
       if args.inputs.keyboard.key_down.space || args.inputs.controller_one.key_down.a
         @player.fire_one = true
       else
         @player.fire_one = false
       end
 
+      # Fire two
+      if args.inputs.keyboard.key_down.x || args.inputs.controller_one.key_down.b
+        @player.fire_two = true
+      else
+        @player.fire_two = false
+      end
+
+      # Fire three
+      if args.inputs.keyboard.key_down.c || args.inputs.controller_one.key_down.y
+        @player.fire_three = true
+      else
+        @player.fire_three = false
+      end
+      
+      
+      # Shield command
       if args.inputs.keyboard.key_held.w || args.inputs.controller_one.key_held.x
         @player.shield.shield_on = true 
       elsif !args.inputs.keyboard.key_held.w && !args.inputs.controller_one.key_held.x
@@ -332,6 +343,11 @@ class Game
       @enemies_list.find_all{|meteor| [@player.x, @player.y, @player.w, @player.h].intersect_rect?([meteor.x, meteor.y, meteor.w, meteor.h])}.map do |meteor|
         meteor.active = false
         @explosions_list.push(Explosion.new(meteor.x, meteor.y, @scale))
+        @player.energy_level -= 5
+      end
+      @bullets_list.find_all{|bullet| [bullet.x, bullet.y, bullet.w, bullet.h].intersect_rect?([@player.x, @player.y, @player.w, @player.h])}.map do |bullet|
+        bullet.active = false
+        @explosions_list.push(Explosion.new(bullet.x, bullet.y, @scale))
         @player.energy_level -= 5
       end
     end

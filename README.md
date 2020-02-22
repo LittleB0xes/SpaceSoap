@@ -19,4 +19,5 @@ You can use keyboard or gamepad to play
 
 ## GFX Credits
 
-The assets in this repository are created at Sparklin Labs by Pixel-boy. I made some additions and modifications
+ * The assets in this repository are created at Sparklin Labs by Pixel-boy. I made some additions and modifications
+ * SFX and background music by [Mathys Dupont](https://gitlab.com/mathys)

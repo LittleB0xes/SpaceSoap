@@ -37,20 +37,22 @@ class Player
     @shield = Shield.new @x, @y, @w, @h, @scale
   end
 
-  def update frame, bullets_list
+  def update args, bullets_list
     @angle -= @rotation_speed * @rotation_factor
     if @engine_on && @vx**2 + @vy**2 < @speed_max**2
       acc = 0.2
       @vx += acc * Math.cos(Math::PI * @angle / 180)
       @vy += acc * Math.sin(Math::PI * @angle / 180)
 
-      @tile_x = 45 * (frame % 5 + 1)
+      @tile_x = 45 * (args.tick_count % 5 + 1)
     else
       @vx *= 0.98
       @vy *= 0.98
       @tile_x = 0
     end
     if @fire_one && !@shield.shield_on
+      args.outputs.sounds << "sounds/blaster.wav"
+
       bullets_list.push(Bullet.new(
                          @x + 0.5 * @w * (1 + 1.5 * Math.cos(Math::PI * @angle / 180)),
                          @y + 0.5 * @h * (1 + 1.5 * Math.sin(Math::PI * @angle / 180)),
@@ -65,30 +67,19 @@ class Player
     @rotation_factor = 0
     @engine_on = false
 
-    # Smooth stop when border approch
-    offset = 50
-    if (@x < offset && @vx  < 0) || (@x > 1280 - offset - @w && @vx > 0) || (@y < offset &&  @vy  < 0) || (@y > 720 - offset - @h &&  @vy > 0)
-      @vx *= 0.8
-      @vy *= 0.8
+    # infinte screen
+    if @x < -@w * @scale 
+      @x = 1280
+    elsif @x > 1280
+      @x = -@w * @scale
+    end
+    if @y < -@h * @scale
+      @y = 720
+    elsif @y > 720
+      @y = -@h * @scale
     end
 
-    # Stay on the screen please !
-    if @x < 0 
-      @vx = 0 
-      @x = 0
-    elsif @x > 1280 - @w
-      @vx = 0
-      @x = 1280 - @w
-    end
-    if @y < 0
-      @y = 0
-      @vy = 0
-    elsif @y > 720 - @h
-      @y = 720 - @h
-      @vy = 0
-    end
-
-    @shield.update(@x, @y, frame) 
+    @shield.update(@x, @y, args.tick_count) 
   end
 end
 

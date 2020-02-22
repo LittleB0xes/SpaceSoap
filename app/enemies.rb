@@ -2,7 +2,7 @@
 
 class PurpleFighter
   attr_sprite
-  attr_accessor :active, :speed, :theta, :enemy_type
+  attr_accessor :active, :speed, :theta, :enemy_type, :life
 
   def initialize scale
     @x = 0
@@ -31,13 +31,14 @@ class PurpleFighter
     @path = "sprites/enemy2.png"
     @angle = 0
 
-    @enemy_type = :purplefighter
+    @enemy_type = :fighter
     @theta = 2 * Math::PI * rand()
     @active = true
     @rotation_speed = 10 * rand()
     @speed = (3 + 5 * rand()) * scale
     @scale = scale
     @rotation_speed = 5
+    @life = 5
   end
 
   def update frame, player, bullets_list

@@ -13,6 +13,7 @@ class Game
     @enemies_list = []
     @bullets_list = []
     @enemies_bullets_list = []
+    @max_enemies = 15
     @explosions_list = []
     100.times {@galaxy_background.push(Star.new @scale)}
   end
@@ -29,10 +30,10 @@ class Game
       @bullets_list = []
       @enemies_bullets_list = []
       @explosions_list = []
-      30.times {@enemies_list.push(Meteor.new @scale)}
+      @max_enemies.times {@enemies_list.push(Meteor.new @scale)}
       @enemies_list.push(PurpleFighter.new(@scale))
     when :level_one
-      game_update args.tick_count
+      game_update args
       game_render args
       display_info args
       @state = :end if @player.energy_level <= 0
@@ -44,9 +45,14 @@ class Game
     when :info
     end
   end
+
   
   def intro_render args
-      @galaxy_background.map {|star| args.outputs.sprites << star.sprite}
+      args.outputs.sounds << "sounds/spaces.ogg" 
+      @galaxy_background.map do |star|
+        star.update args.tick_count
+        args.outputs.sprites << star.sprite
+      end
       args.outputs.labels << {
         x: 640,
         y: 360,
@@ -116,6 +122,16 @@ class Game
       args.outputs.primitives << [game_over, score, restart]
   end
 
+  def enemies_nursery
+    if @enemies_list.length < @max_enemies
+      alea = rand()
+      if alea < 0.5
+        @enemies_list.push(Meteor.new(@scale))
+      else
+        @enemies_list.push(PurpleFighter.new(@scale))
+      end
+    end
+  end
   def display_info args
     bar_color = Array.new(3,0)
     if @player.energy_level > 50
@@ -242,8 +258,9 @@ class Game
 
   end
 
-  def game_update tick_count
-    @player.update tick_count, @bullets_list
+  def game_update args
+    tick_count = args.tick_count
+    @player.update args, @bullets_list
     @galaxy_background.each do |star|
       star.update tick_count
     end
@@ -264,6 +281,9 @@ class Game
     @bullets_list.delete_if{|bullet| !bullet.active}
     @enemies_list.delete_if{|meteor| !meteor.active}
     @explosions_list.reject!{|explosion| !explosion.active}
+
+    enemies_nursery
+
   end
   
   def control_manager args
@@ -327,6 +347,9 @@ class Game
       if enemy.enemy_type == :meteor      # If big meteor then fragmentation
         @enemies_list.push(enemy.fragmentation)
         @player.score += 1
+      elsif enemy.enemy_type == :fighter && enemy.life > 1
+        enemy.life += 1
+
       else
         enemy.active = false
         @player.score += 1

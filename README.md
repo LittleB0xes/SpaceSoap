@@ -9,13 +9,15 @@ Work in progreess
 
 You can use keyboard or gamepad to play
 
-|                   | Keyboard          | Gamepad                     |
-|-------------------|-------------------|-----------------------------|
-| Turn Right / Left | Arow Right / Left | Right /Left Directional key |
-|                   |                   | Analog                      |
-| Fire              | Space             | L1                          |
-| Engine            | Arrow Up          | A                           |
-|                   |                   |                             |
+|                   | Keyboard           | Gamepad                     |
+|-------------------|--------------------|-----------------------------|
+| Turn Right / Left | Arrow Right / Left | Right /Left Directional key |
+|                   |                    | Right /Left Analog          |
+| Engine            | Arrow Up           | Up Directional key          |
+|                   |                    | Up Analog                   |
+| Fire              | Space              | A                           |
+| Shield            | Arrow Up           | X                           |
+|                   |                    |                             |
 
 ## GFX Credits
 

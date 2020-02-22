@@ -1,8 +1,15 @@
+class Projectile
+  attr_sprite
+  attr_accessor :active
 
+  def update
+    @x += @speed * Math.cos(Math::PI * @angle / 180)
+    @y += @speed * Math.sin(Math::PI * @angle / 180)
+    @active = false if @x < -@w || @x > 1280 || @y < -@h || @y > 720
+  end
+end
 
-
-class Bullet
-
+class Bullet < Projectile
   attr_sprite
   attr_accessor :active
   def initialize x, y, angle, scale
@@ -20,14 +27,13 @@ class Bullet
     @speed = 15 * scale
     @active = true
   end
+
   def update
-    @x += @speed * Math.cos(Math::PI * @angle / 180)
-    @y += @speed * Math.sin(Math::PI * @angle / 180)
-    @active = false if @x < -@w || @x > 1280 || @y < -@h || @y > 720
+    super
   end
 end
 
-class Rocket
+class Rocket < Projectile 
   attr_sprite
   attr_accessor :active
   def initialize x, y, angle, scale
@@ -46,12 +52,31 @@ class Rocket
     @active = true
   end
   def update
-    @x += @speed * Math.cos(Math::PI * @angle / 180)
-    @y += @speed * Math.sin(Math::PI * @angle / 180)
-    @active = false if @x < -@w || @x > 1280 || @y < -@h || @y > 720
+    super
   end
 end
 
+class Fireball < Projectile
+  attr_sprite
+  attr_accessor :active
+  def initialize x, y, anlge, scale
+    @w = 18 * scale
+    @h = 16 * scale
+    @angle = angle
+    @x = x + @w / 2
+    @y = y + @h / 2
+    @path = "sprites/bullet3.png"
+    @tile_w = 18
+    @tile_h = 16
+
+    @speed = 5 * scale
+    @active = true
+  end
+
+  def update
+    super
+  end
+end
 
 class Star
   attr_sprite

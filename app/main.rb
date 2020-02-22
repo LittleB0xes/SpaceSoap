@@ -15,10 +15,9 @@ class Game
     @enemies_bullets_list = []
     @max_enemies = 15
     @explosions_list = []
+    @music_on = true
     100.times {@galaxy_background.push(Star.new @scale)}
   end
-
-
 
   def state_manager args
     control_manager args
@@ -132,6 +131,7 @@ class Game
       end
     end
   end
+
   def display_info args
     bar_color = Array.new(3,0)
     if @player.energy_level > 50

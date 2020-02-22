@@ -31,14 +31,18 @@ class PurpleFighter
     @path = "sprites/enemy2.png"
     @angle = 0
 
+    
+
     @enemy_type = :fighter
     @theta = 2 * Math::PI * rand()
     @active = true
     @rotation_speed = 10 * rand()
+
     @speed = (3 + 5 * rand()) * scale
     @scale = scale
     @rotation_speed = 5
     @life = 5
+    @fire_rate = 50 + rand(10) 
   end
 
   def update frame, player, bullets_list
@@ -52,8 +56,9 @@ class PurpleFighter
     @x += @speed * Math.cos(Math::PI * @angle / 180)
     @y += @speed * Math.sin(Math::PI * @angle / 180)
     @tile_x = @tile_w * (frame % 5)
-
-    if (theta - @angle).abs < 4 && frame % 60 == 0 
+    
+    # Shoot when player is in fire window
+    if (theta - @angle).abs < 4 && frame % @fire_rate == 0 
       alpha = 15 * Math::PI / 180
       bullets_list.push(Rocket.new(
         @x +  0.5 * @w * (1 + 2 * Math.cos(Math::PI * @angle / 180 + alpha)),

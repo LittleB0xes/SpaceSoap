@@ -46,12 +46,14 @@ class PurpleFighter
   end
 
   def update frame, player, bullets_list
-    theta = Math.atan2(player.y - @y, player.x - @x) * 180 / Math::PI
+    theta = (360 + Math.atan2(player.y - @y, player.x - @x) * 180 / Math::PI).round
+    theta = theta % 360
     if @angle > theta
       @angle -= @rotation_speed
     elsif @angle < theta
       @angle += @rotation_speed
     end
+    @angle = @angle % 360
 
     @x += @speed * Math.cos(Math::PI * @angle / 180)
     @y += @speed * Math.sin(Math::PI * @angle / 180)

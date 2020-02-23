@@ -19,35 +19,28 @@ class Game
     100.times {@galaxy_background.push(Star.new @scale)}
   end
 
-  def state_manager args
+  def tick args
     control_manager args
-    case @state
-    when :intro
-      intro_render args
-      @player = Player.new(1280 / 2, 720 / 2, @scale)
-      @enemies_list = []
-      @bullets_list = []
-      @enemies_bullets_list = []
-      @explosions_list = []
-      @max_enemies.times {@enemies_list.push(Meteor.new @scale)}
-      @enemies_list.push(PurpleFighter.new(@scale))
-    when :level_one
-      game_update args
-      game_render args
-      display_info args
-      @state = :end if @player.energy_level <= 0
-    when :end
-      end_render args
-      @galaxy_background.each {|star| star.update args.tick_count}
+    update args
+    render args
 
-      # Reset game data
-    when :info
-    end
+  end
+  
+  def update args
+    intro_update args
+    game_update args
+    end_update args
   end
 
+  def render args
+    intro_render args
+    game_render args
+    end_render args
+  end
   
   def intro_render args
-      args.outputs.sounds << "sounds/spaces.ogg" 
+    return unless @state == :intro
+      args.outputs.sounds << "sounds/spaces.ogg" if @music_on 
       @galaxy_background.map do |star|
         star.update args.tick_count
         args.outputs.sprites << star.sprite
@@ -80,45 +73,46 @@ class Game
   end
 
   def end_render args
-      @galaxy_background.map {|star| args.outputs.sprites << star.sprite}
-      game_over = {
-        x: 640,
-        y: 360,
-        text: "Game Over",
-        size_enum: 10,
-        alignment_enum: 1,
-        r: 255,
-        g: 255,
-        b: 255,
-        a: 255,
-        font: "fonts/8-bit-pusab.ttf"
-      }.label
-      alpha = 125 * (1.25 + 0.75 * Math.cos(args.tick_count / 10))
-      score = {
-        x: 640,
-        y: 280,
-        text: "#{@player.score}",
-        size_enum: 6,
-        alignment_enum: 1,
-        r: 255,
-        g: 255,
-        b: 255,
-        a: alpha,
-        font: "fonts/8-bit-pusab.ttf"
-      }
-      restart = {
-        x: 640,
-        y: 40,
-        text: "Press start",
-        size_enum: 0,
-        alignment_enum: 1,
-        r: 255,
-        g: 255,
-        b: 255,
-        a: alpha,
-        font: "fonts/8-bit-pusab.ttf"
-      }
-      args.outputs.primitives << [game_over, score, restart]
+    return unless @state == :end
+    @galaxy_background.map {|star| args.outputs.sprites << star.sprite}
+    game_over = {
+      x: 640,
+      y: 360,
+      text: "Game Over",
+      size_enum: 10,
+      alignment_enum: 1,
+      r: 255,
+      g: 255,
+      b: 255,
+      a: 255,
+      font: "fonts/8-bit-pusab.ttf"
+    }.label
+    alpha = 125 * (1.25 + 0.75 * Math.cos(args.tick_count / 10))
+    score = {
+      x: 640,
+      y: 280,
+      text: "#{@player.score}",
+      size_enum: 6,
+      alignment_enum: 1,
+      r: 255,
+      g: 255,
+      b: 255,
+      a: alpha,
+      font: "fonts/8-bit-pusab.ttf"
+    }
+    restart = {
+      x: 640,
+      y: 40,
+      text: "Press start",
+      size_enum: 0,
+      alignment_enum: 1,
+      r: 255,
+      g: 255,
+      b: 255,
+      a: alpha,
+      font: "fonts/8-bit-pusab.ttf"
+    }
+    args.outputs.primitives << [game_over, score, restart]
   end
 
   def enemies_nursery
@@ -133,6 +127,7 @@ class Game
   end
 
   def display_info args
+    return unless @state == :level_one
     bar_color = Array.new(3,0)
     if @player.energy_level > 50
       bar_color = [67, 102, 194]
@@ -230,6 +225,7 @@ class Game
   end
 
   def game_render args
+    return unless @state == :level_one
     args.outputs.sprites << @galaxy_background.map do |star|
       star.sprite
     end
@@ -259,6 +255,7 @@ class Game
   end
 
   def game_update args
+    return unless @state == :level_one
     tick_count = args.tick_count
     @player.update args, @bullets_list
     @galaxy_background.each do |star|
@@ -286,6 +283,25 @@ class Game
 
   end
   
+  def end_update args
+    return unless @state == :end
+    @galaxy_background.each {|star| star.update args.tick_count}
+  end
+  
+  def intro_update args
+    return unless @state == :intro
+    @player ||= Player.new(1280 / 2, 720 / 2, @scale)
+    @enemies_list = []
+    @bullets_list = []
+    @enemies_bullets_list = []
+    @explosions_list = []
+    @max_enemies.times {@enemies_list.push(Meteor.new @scale)}
+    @enemies_list.push(PurpleFighter.new(@scale))
+    @galaxy_background.map do |star|
+      star.update args.tick_count
+    end
+  end
+
   def control_manager args
     case @state
     when :intro
@@ -394,5 +410,5 @@ $game = Game.new
 def tick args
   args.outputs.static_background_color = [21,15,10]
   args.outputs.solids << [0,0,1280,720,21,15,10,255]
-  $game.state_manager args
+  $game.tick args
 end

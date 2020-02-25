@@ -13,7 +13,7 @@ class Game
     @enemies_list = []
     @bullets_list = []
     @enemies_bullets_list = []
-    @max_enemies = 15
+    @max_enemies = 10
     @explosions_list = []
     @music_on = true
     100.times {@galaxy_background.push(Star.new @scale)}
@@ -23,6 +23,7 @@ class Game
     control_manager args
     update args
     render args
+    display_info args
 
   end
   
@@ -250,7 +251,7 @@ class Game
       explosion.sprite if explosion.active
     end
     
-    debug_outputs args
+    #debug_outputs args
 
   end
 
@@ -281,6 +282,8 @@ class Game
 
     enemies_nursery
 
+    @state = :end if @player.energy_level <= 0
+
   end
   
   def end_update args
@@ -290,13 +293,13 @@ class Game
   
   def intro_update args
     return unless @state == :intro
-    @player ||= Player.new(1280 / 2, 720 / 2, @scale)
+    @player = Player.new(1280 / 2, 720 / 2, @scale)
     @enemies_list = []
     @bullets_list = []
     @enemies_bullets_list = []
     @explosions_list = []
-    @max_enemies.times {@enemies_list.push(Meteor.new @scale)}
-    @enemies_list.push(PurpleFighter.new(@scale))
+    (@max_enemies - 3).times {@enemies_list.push(Meteor.new @scale)}
+    3.times {@enemies_list.push(PurpleFighter.new(@scale))}
     @galaxy_background.map do |star|
       star.update args.tick_count
     end
@@ -364,7 +367,7 @@ class Game
         @enemies_list.push(enemy.fragmentation)
         @player.score += 1
       elsif enemy.enemy_type == :fighter && enemy.life > 1
-        enemy.life += 1
+        enemy.life -= 1
 
       else
         enemy.active = false
@@ -408,7 +411,7 @@ end
 $game = Game.new
 
 def tick args
-  args.outputs.static_background_color = [21,15,10]
+  args.outputs.background_color = [21,15,10]
   args.outputs.solids << [0,0,1280,720,21,15,10,255]
   $game.tick args
 end

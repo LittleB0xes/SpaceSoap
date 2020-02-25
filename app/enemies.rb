@@ -38,7 +38,9 @@ class PurpleFighter
     @active = true
     @rotation_speed = 10 * rand()
 
-    @speed = (3 + 5 * rand()) * scale
+    @max_speed = (3 + 5 * rand()) * scale
+    @vx = 0
+    @vy = 0
     @scale = scale
     @rotation_speed = 5
     @life = 5
@@ -46,8 +48,11 @@ class PurpleFighter
   end
 
   def update frame, player, bullets_list
+
+  
     theta = (360 + Math.atan2(player.y - @y, player.x - @x) * 180 / Math::PI).round
     theta = theta % 360
+    squared_dist = (@x - player.x)**2 + (@y - player.y)**2
     if @angle > theta
       @angle -= @rotation_speed
     elsif @angle < theta
@@ -55,9 +60,27 @@ class PurpleFighter
     end
     @angle = @angle % 360
 
-    @x += @speed * Math.cos(Math::PI * @angle / 180)
-    @y += @speed * Math.sin(Math::PI * @angle / 180)
-    @tile_x = @tile_w * (frame % 5)
+    if squared_dist < 10000
+      acc = 0
+    else
+      acc = 0.2
+    end
+
+
+    if @vx**2 + @vy**2 < @max_speed**2
+      acc = 0.2     #PurpleFighter acceleration
+      @vx += acc * Math.cos(Math::PI * @angle / 180)
+      @vy += acc * Math.sin(Math::PI * @angle / 180)
+      @tile_x = @tile_w * (frame % 5)
+    else
+      @vx *= 0.98
+      @vy *= 0.98
+      @tile_x = 0
+    end
+
+    @x += @vx 
+    @y += @vy 
+   
     
     # Shoot when player is in fire window
     if (theta - @angle).abs < 4 && frame % @fire_rate == 0 

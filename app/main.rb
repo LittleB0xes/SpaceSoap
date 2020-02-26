@@ -367,14 +367,13 @@ class Game
 
       if enemy.enemy_type == :meteor      # If big meteor then fragmentation
         @enemies_list.push(enemy.fragmentation)
-        @player.score += 1
       elsif enemy.enemy_type == :fighter && enemy.life > 1
         enemy.life -= 1
-
       else
         enemy.active = false
-        @player.score += 1
+        @bullets_list.push(Bonus.new(enemy.x, enemy.y, enemy.angle, @scale)) if enemy.enemy_type == :fighter && rand(100) < 30
       end
+      @player.score += 1
       @explosions_list.push(Explosion.new(enemy.x, enemy.y, @scale))
     end
     
@@ -397,8 +396,14 @@ class Game
 
     @bullets_list.find_all{|bullet| [bullet.x, bullet.y, bullet.w, bullet.h].intersect_rect?([@player.x, @player.y, @player.w, @player.h])}.map do |bullet|
       bullet.active = false
-      @explosions_list.push(Explosion.new(bullet.x, bullet.y, @scale))
-      @player.energy_level -= 5 if !@player.shield.shield_on && @player.shield.shield_level > 0
+
+      # Yeah It's a bonus
+      if bullet.is_a?(Bonus)
+        bullet.effect @player
+      else
+        @explosions_list.push(Explosion.new(bullet.x, bullet.y, @scale))
+        @player.energy_level -= 5 if !@player.shield.shield_on && @player.shield.shield_level > 0
+      end
     end
   end
   

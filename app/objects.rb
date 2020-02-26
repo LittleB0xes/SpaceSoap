@@ -11,7 +11,7 @@ end
 
 class Bullet < Projectile
   attr_sprite
-  attr_accessor :active
+  attr_accessor :active, :type
   def initialize x, y, angle, scale
     @w = 10 * scale
     @h = 10 * scale
@@ -75,6 +75,46 @@ class Fireball < Projectile
 
   def update
     super
+  end
+end
+
+class Bonus
+  attr_sprite
+  attr_accessor :active
+  def initialize x, y, angle, scale
+    @x = x
+    @y = y
+    @w = 24
+    @h = 19
+    @angle = angle + [-1, 1].sample * rand(30)
+    @type = [:energy, :shield].sample
+    case @type
+    when :energy
+      @path = "sprites/power-up-4.png"
+    when :shield
+      @path = "sprites/power-up-5.png"
+    end
+    
+    @speed = 5 * rand() * scale
+    @active = true
+    @theta = @angle
+    @rotation_speed = (5 + rand(@speed)) * [-1, 1].sample
+  end
+
+  def effect player
+    case @type
+    when :energy
+      player.energy_up
+    when :shield
+      player.shield.shield_up
+    end
+  end
+
+  def update
+    @x += @speed * Math.cos(Math::PI * @theta / 180)
+    @y += @speed * Math.sin(Math::PI * @theta / 180)
+    @angle += @rotation_speed
+    @active = false if @x < -@w || @x > 1280 || @y < -@h || @y > 720
   end
 end
 

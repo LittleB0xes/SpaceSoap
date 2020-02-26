@@ -25,7 +25,8 @@ class Player
     @rotation_factor = 0
     @rotation_speed = 5
     @speed_max = 10 * scale
-    @energy_level = 100
+    @max_energy = 100
+    @energy_level = @max_energy
     @score = 0
     @turn_right = false
     @turn_left = false
@@ -81,6 +82,11 @@ class Player
 
     @shield.update(@x, @y, args.tick_count) 
   end
+  
+  def energy_up
+    @energy_level = @max_energy
+  end
+
 end
 
 class Shield
@@ -102,7 +108,8 @@ class Shield
     @a = 255
 
     @shield_on = false
-    @shield_level = 100
+    @max_shield = 100
+    @shield_level = @max_shield
     @scale = scale
   end
   
@@ -116,8 +123,12 @@ class Shield
 
     if @shield_on && @shield_level >= 0 
      @shield_level -= 1
-    elsif !@shield_on && @shield_level <= 100
+    elsif !@shield_on && @shield_level <= @max_shield
       @shield_level += 0.01
     end
+  end
+
+  def shield_up
+    @shield_level = @max_shield
   end
 end

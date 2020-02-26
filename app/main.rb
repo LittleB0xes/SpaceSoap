@@ -360,6 +360,8 @@ class Game
   end
 
   def collision_bullet_enemy
+
+    # bullets vs enemies
     @bullets_list.product(@enemies_list).find_all{|bullet, enemy| [bullet.x, bullet.y, bullet.w, bullet.h].intersect_rect?([enemy.x, enemy.y, enemy.w, enemy.h])}.map do |bullet, enemy|
       bullet.active = false
 
@@ -375,7 +377,8 @@ class Game
       end
       @explosions_list.push(Explosion.new(enemy.x, enemy.y, @scale))
     end
-
+    
+    # Player vs Enemies
     if @player.shield.shield_on && @player.shield.shield_level > 0
       @enemies_list.find_all{|meteor| [@player.x + @player.w / 2, @player.y + @player.h / 2, @player.shield.h].intersect_circle?( [meteor.x + meteor.w / 2, meteor.y + meteor.h / 2, meteor.w / 2])}.map do |meteor|
         meteor.active = false
@@ -387,11 +390,15 @@ class Game
         @explosions_list.push(Explosion.new(meteor.x, meteor.y, @scale))
         @player.energy_level -= 5
       end
-      @bullets_list.find_all{|bullet| [bullet.x, bullet.y, bullet.w, bullet.h].intersect_rect?([@player.x, @player.y, @player.w, @player.h])}.map do |bullet|
-        bullet.active = false
-        @explosions_list.push(Explosion.new(bullet.x, bullet.y, @scale))
-        @player.energy_level -= 5
-      end
+
+    end
+    
+    # Player vs Bullet
+
+    @bullets_list.find_all{|bullet| [bullet.x, bullet.y, bullet.w, bullet.h].intersect_rect?([@player.x, @player.y, @player.w, @player.h])}.map do |bullet|
+      bullet.active = false
+      @explosions_list.push(Explosion.new(bullet.x, bullet.y, @scale))
+      @player.energy_level -= 5 if !@player.shield.shield_on && @player.shield.shield_level > 0
     end
   end
   

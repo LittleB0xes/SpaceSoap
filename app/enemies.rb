@@ -1,9 +1,5 @@
-
-
-class PurpleFighter
+class Enemy
   attr_sprite
-  attr_accessor :active, :speed, :theta, :enemy_type, :life
-
   def initialize scale
     @x = 0
     @y = 0
@@ -21,7 +17,24 @@ class PurpleFighter
       @x = 1320
       @y = rand(720)
     end
+  end
 
+  def rest_in_screen
+    @x = 1320 if @x < -40
+    @x = -40 if @x > 1320
+    @y = 760 if @y < -40
+    @y = -40 if @y > 760
+
+  end
+end
+
+
+class PurpleFighter < Enemy
+  attr_sprite
+  attr_accessor :active, :speed, :theta, :enemy_type, :life
+
+  def initialize scale
+    super
     @w = 42 * scale
     @h = 39 * scale
     @tile_w = 40
@@ -38,18 +51,18 @@ class PurpleFighter
     @active = true
     @rotation_speed = 10 * rand()
 
-    @max_speed = (3 + 5 * rand()) * scale
+    @max_speed = (2 + 4 * rand()) * scale
     @vx = 0
     @vy = 0
     @scale = scale
     @rotation_speed = 5
-    @life = 5
+    @life = 3
     @fire_rate = 50 + rand(10) 
   end
 
   def update frame, player, bullets_list
 
-  
+    # Anlge between fighter and player
     theta = (360 + Math.atan2(player.y - @y, player.x - @x) * 180 / Math::PI).round
     theta = theta % 360
     squared_dist = (@x - player.x)**2 + (@y - player.y)**2
@@ -98,38 +111,20 @@ class PurpleFighter
         @scale)
       )
     end
-
-    @x = 1320 if @x < -40
-    @x = -40 if @x > 1320
-    @y = 760 if @y < -40
-    @y = -40 if @y > 760
+    
+    rest_in_screen
   end
 
 end
 
 
-class Meteor
+class Meteor < Enemy
   attr_sprite
   attr_accessor :active, :big_one, :speed, :theta, :enemy_type
   def initialize scale
+    
+    super
   
-    @x = 0
-    @y = 0
-    case rand(4)
-    when 0
-      @x = rand(1280)
-      @y = -40
-    when 1
-      @x = -40
-      @y = rand(720)
-    when 2
-      @x = rand(1280)
-      @y = 760
-    when 3
-      @x = 1320
-      @y = rand(720)
-    end
-
     @w = 42 * scale
     @h = 39 * scale
     @path = "sprites/enemy1.png"
@@ -142,15 +137,15 @@ class Meteor
     @speed = 10 * rand() * scale
     @scale = scale
   end
+
   def update frame, player, _
     @x += @speed * Math.cos(@theta)
     @y += @speed * Math.sin(@theta)
-    @x = 1320 if @x < -40
-    @x = -40 if @x > 1320
-    @y = 760 if @y < -40
-    @y = -40 if @y > 760
     @angle += @rotation_speed
+
+    rest_in_screen
   end
+  
   def fragmentation
     meteor_fragment = Meteor.new @scale
     meteor_fragment.x = @x

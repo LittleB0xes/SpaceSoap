@@ -120,7 +120,7 @@ end
 
 class Star
   attr_sprite
-  def initialize scale
+  def initialize scale, args
     @x = 1280 * rand()
     @y = 720 * rand()
     dist_scale = 1 - 0.5 * rand()
@@ -136,6 +136,7 @@ class Star
     @phi = Math::PI * rand()
     @vx = 0.1
     @vy = 0.1
+    args.outputs.static_sprites << self
   end
   def update frame
     # Star luminosity oscillation

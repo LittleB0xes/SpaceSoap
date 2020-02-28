@@ -4,7 +4,7 @@ require 'app/player.rb'
 
 class Game
   attr_accessor :bullets_list, :enemies_list, :state
-  def initialize
+  def initialize args
     @scale = 0.6
     @font = "fonts/8-bit-pusab"
     @state = :intro
@@ -16,7 +16,7 @@ class Game
     @max_enemies = 10
     @explosions_list = []
     @music_on = true
-    100.times {@galaxy_background.push(Star.new @scale)}
+    400.times {@galaxy_background.push(Star.new @scale, args)}
   end
 
   def tick args
@@ -42,10 +42,6 @@ class Game
   def intro_render args
     return unless @state == :intro
       args.outputs.sounds << "sounds/spaces.ogg" if @music_on 
-      @galaxy_background.map do |star|
-        star.update args.tick_count
-        args.outputs.sprites << star.sprite
-      end
       args.outputs.labels << {
         x: 640,
         y: 360,
@@ -75,7 +71,6 @@ class Game
 
   def end_render args
     return unless @state == :end
-    @galaxy_background.map {|star| args.outputs.sprites << star.sprite}
     game_over = {
       x: 640,
       y: 360,
@@ -227,9 +222,6 @@ class Game
 
   def game_render args
     return unless @state == :level_one
-    args.outputs.sprites << @galaxy_background.map do |star|
-      star.sprite
-    end
     
     args.outputs.sprites << @player.sprite
 
@@ -251,7 +243,7 @@ class Game
       explosion.sprite if explosion.active
     end
     
-    #debug_outputs args
+    debug_outputs args
 
   end
 
@@ -300,9 +292,7 @@ class Game
     @explosions_list = []
     (@max_enemies - 3).times {@enemies_list.push(Meteor.new @scale)}
     3.times {@enemies_list.push(PurpleFighter.new(@scale))}
-    @galaxy_background.map do |star|
-      star.update args.tick_count
-    end
+    @galaxy_background.map {|star| star.update args.tick_count}
   end
 
   def control_manager args
@@ -420,9 +410,9 @@ class Array
 end
 
 
-$game = Game.new
 
 def tick args
+  $game ||= Game.new args
   args.outputs.background_color = [21,15,10]
   args.outputs.solids << [0,0,1280,720,21,15,10,255]
   $game.tick args

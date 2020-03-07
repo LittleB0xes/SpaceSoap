@@ -44,9 +44,9 @@ class Game
       args.outputs.sounds << "sounds/spaces.ogg" if @music_on 
       args.outputs.labels << {
         x: 640,
-        y: 360,
-        text: "Space shooter",
-        size_enum: 10,
+        y: 420,
+        text: "Space Soap",
+        size_enum: 20,
         alignment_enum: 1,
         r: 255,
         g: 255,
@@ -57,7 +57,7 @@ class Game
       alpha = 125 * (1.25 + 0.75 * Math.cos(args.tick_count / 10))
       args.outputs.labels << {
         x: 640,
-        y: 300,
+        y: 360,
         text: "Press start",
         size_enum: 0,
         alignment_enum: 1,
@@ -65,6 +65,19 @@ class Game
         g: 255,
         b: 255,
         a: alpha,
+        font: "fonts/8-bit-pusab.ttf"
+      }
+      
+      args.outputs.labels << {
+        x: 640,
+        y: 40,
+        text: "Humbly made with DragonRuby Game Toolkit",
+        size_enum: -1,
+        alignment_enum: 1,
+        r: 150,
+        g: 150,
+        b: 255,
+        a: 255,
         font: "fonts/8-bit-pusab.ttf"
       }
   end
@@ -243,7 +256,7 @@ class Game
       explosion.sprite if explosion.active
     end
     
-    debug_outputs args
+    #debug_outputs args
 
   end
 

@@ -1,7 +1,7 @@
 
 class Player
   attr_sprite
-  attr_accessor :engine_on, :rotation_factor, :fire_one, :fire_two, :fire_three, :shield, :energy_level, :score
+  attr_accessor :engine_on, :rotation_factor, :fire_one, :fire_two, :fire_three, :shield, :energy_level, :score, :alt_weapon, :alt_amo
 
   def initialize x, y, scale 
     #Sprite properties
@@ -32,8 +32,10 @@ class Player
     @turn_left = false
     @engine_on = false
     @fire_one = false
+
     @fire_two = false
-    @fire_three = false
+    @alt_weapon = :none
+    @alt_amo = 0
 
     @shield = Shield.new @x, @y, @w, @h, @scale
   end

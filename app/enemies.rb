@@ -17,6 +17,7 @@ class Enemy
       @x = 1320
       @y = rand(720)
     end
+    @scale = scale
   end
 
   def rest_in_screen
@@ -32,7 +33,6 @@ end
 class PurpleFighter < Enemy
   attr_sprite
   attr_accessor :active, :speed, :theta, :enemy_type, :life
-
   def initialize scale
     super
     @w = 42 * scale
@@ -44,20 +44,18 @@ class PurpleFighter < Enemy
     @path = "sprites/enemy2.png"
     @angle = 0
 
-    
+
 
     @enemy_type = :fighter
     @theta = 2 * Math::PI * rand()
     @active = true
-    @rotation_speed = 10 * rand()
 
     @max_speed = (2 + 4 * rand()) * scale
     @vx = 0
     @vy = 0
-    @scale = scale
     @rotation_speed = 5
-    @life = 3
-    @fire_rate = 50 + rand(10) 
+    @life = 2
+    @fire_rate = 50 + rand(10)
   end
 
   def update frame, player, bullets_list
@@ -91,12 +89,12 @@ class PurpleFighter < Enemy
       @tile_x = 0
     end
 
-    @x += @vx 
-    @y += @vy 
-   
-    
+    @x += @vx
+    @y += @vy
+
+
     # Shoot when player is in fire window
-    if (theta - @angle).abs < 4 && frame % @fire_rate == 0 
+    if (theta - @angle).abs < 4 && frame % @fire_rate == 0
       alpha = 15 * Math::PI / 180
       bullets_list.push(Rocket.new(
         @x +  0.5 * @w * (1 + 2 * Math.cos(Math::PI * @angle / 180 + alpha)),
@@ -111,7 +109,7 @@ class PurpleFighter < Enemy
         @scale)
       )
     end
-    
+
     rest_in_screen
   end
 
@@ -122,9 +120,9 @@ class Meteor < Enemy
   attr_sprite
   attr_accessor :active, :big_one, :speed, :theta, :enemy_type
   def initialize scale
-    
+
     super
-  
+
     @w = 42 * scale
     @h = 39 * scale
     @path = "sprites/enemy1.png"
@@ -135,7 +133,6 @@ class Meteor < Enemy
     @active = true
     @rotation_speed = 5 * rand()
     @speed = 10 * rand() * scale
-    @scale = scale
   end
 
   def update frame, player, _
@@ -145,7 +142,7 @@ class Meteor < Enemy
 
     rest_in_screen
   end
-  
+
   def fragmentation
     meteor_fragment = Meteor.new @scale
     meteor_fragment.x = @x
@@ -163,3 +160,81 @@ class Meteor < Enemy
   end
 end
 
+class GreenFighter < Enemy
+  attr_sprite
+  attr_accessor :active, :speed, :theta, :enemy_type, :life
+  def initialize scale
+    super
+    @w = 47 * scale
+    @h = 64 * scale
+    @tile_w = 47
+    @tile_h = 64
+    @tile_x = 0
+    @tile_y = 0
+    @angle = 0
+    @path = "sprites/greenfighter.png"
+
+    @enemy_type = :fighter
+    @theta = 2 * Math::PI * rand()
+    @active = true
+    @rotation_speed = 3
+    @max_speed = (2 +  2 * rand()) * scale
+    @vx = 0
+    @vy = 0
+    @life = 3
+    @fire_rate = 40 + rand(10)
+  end
+
+  def update frame, player, bullets_list
+
+    # Anlge between fighter and player
+    theta = (360 + Math.atan2(player.y - @y, player.x - @x) * 180 / Math::PI).round
+    theta = theta % 360
+    squared_dist = (@x - player.x)**2 + (@y - player.y)**2
+    if @angle > theta
+      @angle -= @rotation_speed
+    elsif @angle < theta
+      @angle += @rotation_speed
+    end
+    @angle = @angle % 360
+
+    if squared_dist < 10000
+      acc = 0
+    else
+      acc = 0.2
+    end
+
+
+    if @vx**2 + @vy**2 < @max_speed**2
+      acc = 0.2     #PurpleFighter acceleration
+      @vx += acc * Math.cos(Math::PI * @angle / 180)
+      @vy += acc * Math.sin(Math::PI * @angle / 180)
+    else
+      @vx *= 0.99
+      @vy *= 0.99
+    end
+
+    @x += @vx
+    @y += @vy
+
+
+    # Shoot when player is in fire window
+    if (theta - @angle).abs < 4 && frame % @fire_rate == 0
+      alpha = 15 * Math::PI / 180
+      bullets_list.push(Fireball.new(
+        @x +  0.5 * @w * (1 + 2 * Math.cos(Math::PI * @angle / 180 + alpha)),
+        @y +  0.5 * @w * (1 + 2 * Math.sin(Math::PI * @angle / 180 + alpha)),
+        @angle,
+        @scale)
+      )
+      bullets_list.push(Fireball.new(
+        @x + 0.5 *  @w * (1 + 2 * Math.cos(Math::PI * @angle / 180 - alpha)),
+        @y + 0.5 * @w * (1 + 2 * Math.sin(Math::PI * @angle / 180 - alpha)),
+        @angle,
+        @scale)
+      )
+    end
+
+    rest_in_screen
+  end
+end

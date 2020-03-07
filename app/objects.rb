@@ -2,7 +2,7 @@ class Projectile
   attr_sprite
   attr_accessor :active
 
-  def update
+  def update _
     @x += @speed * Math.cos(Math::PI * @angle / 180)
     @y += @speed * Math.sin(Math::PI * @angle / 180)
     @active = false if @x < -@w || @x > 1280 || @y < -@h || @y > 720
@@ -28,19 +28,19 @@ class Bullet < Projectile
     @active = true
   end
 
-  def update
+  def update _
     super
   end
 end
 
-class Rocket < Projectile 
+class Rocket < Projectile
   attr_sprite
   attr_accessor :active
   def initialize x, y, angle, scale
     @w = 17 * scale
     @h = 8 * scale
     @angle = angle
-    @x = x - @w / 2 
+    @x = x - @w / 2
     @y = y - @h / 2
     @path = "sprites/bullet2.png"
     @tile_w = 17
@@ -51,7 +51,7 @@ class Rocket < Projectile
     @speed = 10 * scale
     @active = true
   end
-  def update
+  def update _
     super
   end
 end
@@ -59,7 +59,7 @@ end
 class Fireball < Projectile
   attr_sprite
   attr_accessor :active
-  def initialize x, y, anlge, scale
+  def initialize x, y, angle, scale
     @w = 18 * scale
     @h = 16 * scale
     @angle = angle
@@ -73,10 +73,25 @@ class Fireball < Projectile
     @active = true
   end
 
-  def update
+  def update _
     super
   end
 end
+
+class MultiRocket < Projectile
+  attr_sprite
+  attr_accessor :active
+  def initialize x, y, angle, scale
+    @w = 18 * scale
+    @h = 16 * scale
+  end
+
+  def update player
+    super
+  end
+end
+
+
 
 class Bonus
   attr_sprite
@@ -94,7 +109,7 @@ class Bonus
     when :shield
       @path = "sprites/power-up-5.png"
     end
-    
+
     @speed = 5 * rand() * scale
     @active = true
     @theta = @angle
@@ -110,7 +125,7 @@ class Bonus
     end
   end
 
-  def update
+  def update _
     @x += @speed * Math.cos(Math::PI * @theta / 180)
     @y += @speed * Math.sin(Math::PI * @theta / 180)
     @angle += @rotation_speed
@@ -143,7 +158,7 @@ class Star
     @a = @a_max * (0.7 + 0.3 * Math.cos(frame / 60 + @phi))
     @g = @g_max * (0.7 + 0.3 * Math.cos(frame / 60))
     # Star mouvement around a center
-    @x += 0.309 
+    @x += 0.309
     @y += 0.359
 
     @x = 0 if @x > 1280
@@ -153,10 +168,10 @@ class Star
 end
 
 class Explosion
-  
+
   attr_sprite
   attr_accessor :active
-  
+
   def initialize x, y, scale
     @x = x
     @y = y
@@ -182,4 +197,3 @@ class Explosion
   end
 
 end
-

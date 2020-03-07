@@ -26,7 +26,7 @@ class Game
     display_info args
 
   end
-  
+
   def update args
     intro_update args
     game_update args
@@ -38,10 +38,10 @@ class Game
     game_render args
     end_render args
   end
-  
+
   def intro_render args
     return unless @state == :intro
-      args.outputs.sounds << "sounds/spaces.ogg" if @music_on 
+      args.outputs.sounds << "sounds/spaces.ogg" if @music_on
       args.outputs.labels << {
         x: 640,
         y: 420,
@@ -67,7 +67,7 @@ class Game
         a: alpha,
         font: "fonts/8-bit-pusab.ttf"
       }
-      
+
       args.outputs.labels << {
         x: 640,
         y: 40,
@@ -129,8 +129,10 @@ class Game
       alea = rand()
       if alea < 0.5
         @enemies_list.push(Meteor.new(@scale))
-      else
+      elsif alea < 0.7
         @enemies_list.push(PurpleFighter.new(@scale))
+      else
+        @enemies_list.push(GreenFighter.new(@scale))
       end
     end
   end
@@ -142,10 +144,10 @@ class Game
       bar_color = [67, 102, 194]
     elsif @player.energy_level > 20
       bar_color = [247, 188, 62]
-    else 
+    else
       bar_color =[170, 75, 109]
     end
-    x_energy_bar = 20 
+    x_energy_bar = 20
     y_energy_bar = 640
     background_bar1 = {
       x: x_energy_bar - 9,
@@ -182,7 +184,7 @@ class Game
       bar_color = [67, 102, 194]
     elsif @player.shield.shield_level > 20
       bar_color = [247, 188, 62]
-    else 
+    else
       bar_color =[170, 75, 109]
     end
     x_shield_bar = 20
@@ -228,59 +230,42 @@ class Game
       b: 255,
       font: "fonts/8-bit-pusab.ttf"
     }.label
-      
-    args.outputs.primitives << [background_bar1, energy_bar, energy_label,background_bar2, background_bar2, shield_bar, shield_label,  score] 
-    
+
+    args.outputs.primitives << [background_bar1, energy_bar, energy_label,background_bar2, background_bar2, shield_bar, shield_label,  score]
+
   end
 
   def game_render args
     return unless @state == :level_one
-    
+
     args.outputs.sprites << @player.sprite
 
     if @player.shield.shield_on
       args.outputs.sprites << @player.shield.sprite
     end
 
+    args.outputs.sprites << @bullets_list.map {|bullet| bullet.sprite if bullet.active}
+    args.outputs.sprites << @enemies_list.map {|meteor| meteor.sprite if meteor.active}
+    args.outputs.sprites << @explosions_list.map {|explosion| explosion.sprite if explosion.active}
 
-    args.outputs.sprites << @bullets_list.map do |bullet|
-      bullet.sprite if bullet.active
-    end
-
-
-    args.outputs.sprites << @enemies_list.map do |meteor|
-      meteor.sprite if meteor.active
-    end
-    
-    args.outputs.sprites << @explosions_list.map do |explosion|
-      explosion.sprite if explosion.active
-    end
-    
-    #debug_outputs args
-
+    debug_outputs args
   end
 
   def game_update args
     return unless @state == :level_one
     tick_count = args.tick_count
+    # Star Background update
+    @galaxy_background.each {|star| star.update tick_count}
+
+    # Entities Update
     @player.update args, @bullets_list
-    @galaxy_background.each do |star|
-      star.update tick_count
-    end
-
-    @bullets_list.each do |bullet|
-      bullet.update
-    end
-
-    @enemies_list.each do |meteor|
-      meteor.update tick_count, @player, @bullets_list
-    end
-
-    @explosions_list.each do |explosion|
-      explosion.update tick_count
-    end
+    @bullets_list.each {|bullet| bullet.update @player}
+    @enemies_list.each {|meteor| meteor.update tick_count, @player, @bullets_list}
+    @explosions_list.each {|explosion| explosion.update tick_count}
 
     collision_bullet_enemy
+
+    # Delete inactive item
     @bullets_list.delete_if{|bullet| !bullet.active}
     @enemies_list.delete_if{|meteor| !meteor.active}
     @explosions_list.reject!{|explosion| !explosion.active}
@@ -290,12 +275,12 @@ class Game
     @state = :end if @player.energy_level <= 0
 
   end
-  
+
   def end_update args
     return unless @state == :end
     @galaxy_background.each {|star| star.update args.tick_count}
   end
-  
+
   def intro_update args
     return unless @state == :intro
     @player = Player.new(1280 / 2, 720 / 2, @scale)
@@ -351,13 +336,12 @@ class Game
       else
         @player.fire_three = false
       end
-      
-      
+
       # Shield command
       if args.inputs.keyboard.key_held.w || args.inputs.controller_one.key_held.x
-        @player.shield.shield_on = true 
+        @player.shield.shield_on = true
       elsif !args.inputs.keyboard.key_held.w && !args.inputs.controller_one.key_held.x
-        @player.shield.shield_on = false 
+        @player.shield.shield_on = false
       end
     end
   end
@@ -379,7 +363,7 @@ class Game
       @player.score += 1
       @explosions_list.push(Explosion.new(enemy.x, enemy.y, @scale))
     end
-    
+
     # Player vs Enemies
     if @player.shield.shield_on && @player.shield.shield_level > 0
       @enemies_list.find_all{|meteor| [@player.x + @player.w / 2, @player.y + @player.h / 2, @player.shield.h].intersect_circle?( [meteor.x + meteor.w / 2, meteor.y + meteor.h / 2, meteor.w / 2])}.map do |meteor|
@@ -394,7 +378,7 @@ class Game
       end
 
     end
-    
+
     # Player vs Bullet
 
     @bullets_list.find_all{|bullet| [bullet.x, bullet.y, bullet.w, bullet.h].intersect_rect?([@player.x, @player.y, @player.w, @player.h])}.map do |bullet|
@@ -409,7 +393,7 @@ class Game
       end
     end
   end
-  
+
   def debug_outputs args
     args.outputs.labels << [20,80,"FPS : #{$gtk.current_framerate.to_i}", 255, 255, 255,255]
     args.outputs.labels << [20,60,"Meteors : #{@enemies_list.length}", 255, 255, 255,255]

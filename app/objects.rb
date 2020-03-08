@@ -1,6 +1,10 @@
 class Projectile
   attr_sprite
-  attr_accessor :active
+  attr_accessor :active, :exploded
+  def initialize x, y, angle, scale
+    @active = true
+    @exploded = false
+  end
 
   def update _
     @x += @speed * Math.cos(Math::PI * @angle / 180)
@@ -10,9 +14,8 @@ class Projectile
 end
 
 class Bullet < Projectile
-  attr_sprite
-  attr_accessor :active, :type
   def initialize x, y, angle, scale
+    super
     @w = 10 * scale
     @h = 10 * scale
     @x = x - @w / 2
@@ -25,7 +28,6 @@ class Bullet < Projectile
     @path = "sprites/bullet1.png"
 
     @speed = 15 * scale
-    @active = true
   end
 
   def update _
@@ -37,6 +39,7 @@ class Rocket < Projectile
   attr_sprite
   attr_accessor :active
   def initialize x, y, angle, scale
+    super
     @w = 17 * scale
     @h = 8 * scale
     @angle = angle
@@ -49,7 +52,6 @@ class Rocket < Projectile
     @tile_y = 0
 
     @speed = 10 * scale
-    @active = true
   end
   def update _
     super
@@ -60,6 +62,7 @@ class Fireball < Projectile
   attr_sprite
   attr_accessor :active
   def initialize x, y, angle, scale
+    super
     @w = 18 * scale
     @h = 16 * scale
     @angle = angle
@@ -69,8 +72,7 @@ class Fireball < Projectile
     @tile_w = 18
     @tile_h = 16
 
-    @speed = 5 * scale
-    @active = true
+    @speed = 8 * scale
   end
 
   def update _
@@ -80,15 +82,31 @@ end
 
 class MultiRocket < Projectile
   attr_sprite
-  attr_accessor :active
+  attr_accessor :multi
   def initialize x, y, angle, scale
+    super
     @w = 18 * scale
     @h = 16 * scale
+    @angle = angle
+    @x = x + @w / 2
+    @y = y + @h / 2
+    @tile_h = 18
+    @tile_w = 16
+    @path = "sprites/bullet3.png"
+
+    @multi = false
+    @speed = 8 * scale
   end
 
   def update player
     super
+
+    dist_squared = (@x - player.x)**2 + (@y - player.y)**2
+    if dist_squared < 10000 && !@multi
+      @exploded = true
+    end
   end
+
 end
 
 

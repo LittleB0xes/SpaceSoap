@@ -24,7 +24,6 @@ class Game
     update args
     render args
     display_info args
-
   end
 
   def update args
@@ -163,7 +162,7 @@ class Game
     energy_bar = {
       x: x_energy_bar,
       y: y_energy_bar,
-      w: @player.energy_level,
+      w: @player.energy_level / @player.max_energy * 100,
       h: 11,
       r: bar_color[0],
       g: bar_color[1],
@@ -248,7 +247,7 @@ class Game
     args.outputs.sprites << @enemies_list.map {|meteor| meteor.sprite if meteor.active}
     args.outputs.sprites << @explosions_list.map {|explosion| explosion.sprite if explosion.active}
 
-    debug_outputs args
+    #debug_outputs args
   end
 
   def game_update args
@@ -259,7 +258,19 @@ class Game
 
     # Entities Update
     @player.update args, @bullets_list
-    @bullets_list.each {|bullet| bullet.update @player}
+    @bullets_list.each do |bullet|
+      bullet.update @player
+      if bullet.is_a?(MultiRocket) && bullet.exploded
+        bullet.active = false
+        fragmentation = []
+        angle = [-40, -20, 0, 20, 40]
+        5.times do |n|
+          b = MultiRocket.new bullet.x, bullet.y, bullet.angle + angle[n], @scale
+          b.multi = true
+          @bullets_list.push(b)
+        end
+      end
+    end
     @enemies_list.each {|meteor| meteor.update tick_count, @player, @bullets_list}
     @explosions_list.each {|explosion| explosion.update tick_count}
 
@@ -397,6 +408,7 @@ class Game
   def debug_outputs args
     args.outputs.labels << [20,80,"FPS : #{$gtk.current_framerate.to_i}", 255, 255, 255,255]
     args.outputs.labels << [20,60,"Meteors : #{@enemies_list.length}", 255, 255, 255,255]
+    args.outputs.labels << [20,40,"Bullets : #{@bullets_list.length}", 255, 255, 255,255]
   end
 end
 

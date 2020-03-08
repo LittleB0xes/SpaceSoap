@@ -1,9 +1,9 @@
 
 class Player
   attr_sprite
-  attr_accessor :engine_on, :rotation_factor, :fire_one, :fire_two, :fire_three, :shield, :energy_level, :score, :alt_weapon, :alt_amo
+  attr_accessor :engine_on, :rotation_factor, :fire_one, :fire_two, :fire_three, :shield, :energy_level, :score, :alt_weapon, :alt_amo, :max_energy
 
-  def initialize x, y, scale 
+  def initialize x, y, scale
     #Sprite properties
     @x = x
     @y = y
@@ -17,7 +17,7 @@ class Player
     @tile_x = 0
     @tile_y = 0
     @path = "sprites/spaceship.png"
-    
+
     # Other player properties
     @scale = scale
     @vx = 0
@@ -25,7 +25,7 @@ class Player
     @rotation_factor = 0
     @rotation_speed = 5
     @speed_max = 10 * scale
-    @max_energy = 100
+    @max_energy = 200
     @energy_level = @max_energy
     @score = 0
     @turn_right = false
@@ -71,7 +71,7 @@ class Player
     @engine_on = false
 
     # infinte screen
-    if @x < -@w * @scale 
+    if @x < -@w * @scale
       @x = 1280
     elsif @x > 1280
       @x = -@w * @scale
@@ -82,9 +82,9 @@ class Player
       @y = -@h * @scale
     end
 
-    @shield.update(@x, @y, args.tick_count) 
+    @shield.update(@x, @y, args.tick_count)
   end
-  
+
   def energy_up
     @energy_level = @max_energy
   end
@@ -114,7 +114,7 @@ class Shield
     @shield_level = @max_shield
     @scale = scale
   end
-  
+
   def update player_x, player_y, frame
     @tile_x = (frame / 4).to_i % 4 * @tile_w
     @x = player_x + @delta_x
@@ -123,7 +123,7 @@ class Shield
     @angle += 1
     @shield_on = false if @shield_level <= 0
 
-    if @shield_on && @shield_level >= 0 
+    if @shield_on && @shield_level >= 0
      @shield_level -= 1
     elsif !@shield_on && @shield_level <= @max_shield
       @shield_level += 0.01

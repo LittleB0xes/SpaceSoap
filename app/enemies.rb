@@ -119,10 +119,9 @@ end
 class Meteor < Enemy
   attr_sprite
   attr_accessor :active, :big_one, :speed, :theta, :enemy_type
+
   def initialize scale
-
     super
-
     @w = 42 * scale
     @h = 39 * scale
     @path = "sprites/enemy1.png"
@@ -178,7 +177,7 @@ class GreenFighter < Enemy
     @theta = 2 * Math::PI * rand()
     @active = true
     @rotation_speed = 3
-    @max_speed = (2 +  2 * rand()) * scale
+    @max_speed = (2 + rand()) * scale
     @vx = 0
     @vy = 0
     @life = 3
@@ -198,12 +197,11 @@ class GreenFighter < Enemy
     end
     @angle = @angle % 360
 
-    if squared_dist < 10000
+    if squared_dist < 40000
       acc = 0
     else
       acc = 0.2
     end
-
 
     if @vx**2 + @vy**2 < @max_speed**2
       acc = 0.2     #PurpleFighter acceleration
@@ -217,19 +215,18 @@ class GreenFighter < Enemy
     @x += @vx
     @y += @vy
 
-
     # Shoot when player is in fire window
     if (theta - @angle).abs < 4 && frame % @fire_rate == 0
       alpha = 15 * Math::PI / 180
-      bullets_list.push(Fireball.new(
-        @x +  0.5 * @w * (1 + 2 * Math.cos(Math::PI * @angle / 180 + alpha)),
-        @y +  0.5 * @w * (1 + 2 * Math.sin(Math::PI * @angle / 180 + alpha)),
+      bullets_list.push(MultiRocket.new(
+        @x +  0.6 * @w * (1 + 2 * Math.cos(Math::PI * @angle / 180 + alpha)),
+        @y +  0.6 * @w * (1 + 2 * Math.sin(Math::PI * @angle / 180 + alpha)),
         @angle,
         @scale)
       )
-      bullets_list.push(Fireball.new(
-        @x + 0.5 *  @w * (1 + 2 * Math.cos(Math::PI * @angle / 180 - alpha)),
-        @y + 0.5 * @w * (1 + 2 * Math.sin(Math::PI * @angle / 180 - alpha)),
+      bullets_list.push(MultiRocket.new(
+        @x + 0.6 *  @w * (1 + 2 * Math.cos(Math::PI * @angle / 180 - alpha)),
+        @y + 0.6 * @w * (1 + 2 * Math.sin(Math::PI * @angle / 180 - alpha)),
         @angle,
         @scale)
       )

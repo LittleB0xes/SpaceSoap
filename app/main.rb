@@ -237,7 +237,7 @@ class Game
   def game_render args
     return unless @state == :level_one
 
-    args.outputs.sprites << @player.sprite
+    args.outputs.sprites << @player
 
     if @player.shield.shield_on
       args.outputs.sprites << @player.shield.sprite

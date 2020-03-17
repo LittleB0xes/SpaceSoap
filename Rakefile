@@ -36,6 +36,7 @@ task :commit do
   email = split_args('email', false) || 'no email provided'
   sh "git add ."
   sh "git commit -m \"#{message} by #{email}\""
+  sh "git push"
 end
 
 desc "This is the default rake task"
